@@ -1,38 +1,54 @@
-interface CategoryFilterProps {
-  categories: string[]
-  selected: string
-  onSelect: (category: string) => void
+'use client'
+
+import Link from 'next/link'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
 }
 
-export default function CategoryFilter({
-  categories,
-  selected,
-  onSelect,
-}: CategoryFilterProps) {
+export default function CategoryFilter({ categories }: { categories: Category[] }) {
+  const params = useSearchParams()
+  const pathname = usePathname()
+  const current = params.get('category')
+
+  const link = (slug?: string) => {
+    const sp = new URLSearchParams(params.toString())
+    if (slug) sp.set('category', slug)
+    else sp.delete('category')
+    const qs = sp.toString()
+    return `${pathname}${qs ? '?' + qs : ''}`
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
-      <button
-        onClick={() => onSelect('')}
-        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-          selected === ''
+      <Link
+        href={link(undefined)}
+        className={cn(
+          'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+          !current
             ? 'bg-primary-600 text-white'
-            : 'bg-secondary-100 text-secondary-900 hover:bg-secondary-200'
-        }`}
+            : 'bg-white border border-secondary-200 text-secondary-700 hover:bg-secondary-50',
+        )}
       >
-        All Categories
-      </button>
-      {categories.map((category) => (
-        <button
-          key={category}
-          onClick={() => onSelect(category)}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            selected === category
+        All
+      </Link>
+      {categories.map((c) => (
+        <Link
+          key={c.id}
+          href={link(c.slug)}
+          className={cn(
+            'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
+            current === c.slug
               ? 'bg-primary-600 text-white'
-              : 'bg-secondary-100 text-secondary-900 hover:bg-secondary-200'
-          }`}
+              : 'bg-white border border-secondary-200 text-secondary-700 hover:bg-secondary-50',
+          )}
         >
-          {category}
-        </button>
+          {c.name}
+        </Link>
       ))}
     </div>
   )
