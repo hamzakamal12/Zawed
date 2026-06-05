@@ -56,8 +56,6 @@ model Company {
   // NGO-specific fields
   ngoType            NgoType?
   registrationNumber String?
-  verified           Boolean        @default(false)
-  ngoDiscount        Decimal        @default(0) @db.Decimal(5, 4)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   users              User[]

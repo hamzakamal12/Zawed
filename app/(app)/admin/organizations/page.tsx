@@ -1,9 +1,7 @@
 import { prisma } from '@/lib/db'
 import { requireRole } from '@/lib/session'
 import { Card, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { formatDate } from '@/lib/utils'
-import AdminOrgActions from './AdminOrgActions'
 
 const NGO_TYPE_LABELS: Record<string, string> = {
   CHARITY: 'Charity',
@@ -30,30 +28,22 @@ export default async function AdminOrganizationsPage() {
       <div>
         <h1 className="text-3xl font-bold text-secondary-900">Organizations</h1>
         <p className="text-secondary-500 mt-1">
-          Manage NGO verification and special pricing for all registered organizations.
+          All registered organizations on the platform.
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-xs font-medium uppercase text-secondary-500">Total NGOs</div>
+            <div className="text-xs font-medium uppercase text-secondary-500">Total Organizations</div>
             <div className="text-2xl font-bold mt-1">{companies.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-xs font-medium uppercase text-secondary-500">Verified</div>
-            <div className="text-2xl font-bold mt-1 text-green-700">
-              {companies.filter((c) => c.verified).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-xs font-medium uppercase text-secondary-500">Pending Verification</div>
-            <div className="text-2xl font-bold mt-1 text-yellow-600">
-              {companies.filter((c) => !c.verified).length}
+            <div className="text-xs font-medium uppercase text-secondary-500">Total Users</div>
+            <div className="text-2xl font-bold mt-1">
+              {companies.reduce((s, c) => s + c._count.users, 0)}
             </div>
           </CardContent>
         </Card>
@@ -67,10 +57,9 @@ export default async function AdminOrganizationsPage() {
                 <th className="py-3 px-4">Organization</th>
                 <th className="py-3 px-4">Type</th>
                 <th className="py-3 px-4">Reg. #</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Procurement Email</th>
                 <th className="py-3 px-4">Users / Orders</th>
                 <th className="py-3 px-4">Joined</th>
-                <th className="py-3 px-4">Discount & Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -88,24 +77,13 @@ export default async function AdminOrganizationsPage() {
                   <td className="py-3 px-4 text-secondary-600">
                     {c.registrationNumber ?? '—'}
                   </td>
-                  <td className="py-3 px-4">
-                    {c.verified ? (
-                      <Badge variant="success">Verified</Badge>
-                    ) : (
-                      <Badge variant="warning">Pending</Badge>
-                    )}
+                  <td className="py-3 px-4 text-secondary-600 text-xs">
+                    {c.procurementEmail ?? '—'}
                   </td>
                   <td className="py-3 px-4 text-secondary-600">
                     {c._count.users} / {c._count.orders}
                   </td>
                   <td className="py-3 px-4 text-secondary-600">{formatDate(c.createdAt)}</td>
-                  <td className="py-3 px-4">
-                    <AdminOrgActions
-                      companyId={c.id}
-                      verified={c.verified}
-                      ngoDiscount={Number(c.ngoDiscount)}
-                    />
-                  </td>
                 </tr>
               ))}
             </tbody>

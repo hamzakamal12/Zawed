@@ -21,8 +21,6 @@ async function main() {
       email: 'procurement@hopefoundation.org',
       ngoType: 'CHARITY',
       registrationNumber: 'NGO-SA-2019-0042',
-      verified: true,
-      ngoDiscount: 0.10, // 10% verified NGO discount
     },
   })
 
@@ -38,7 +36,6 @@ async function main() {
       email: 'supplies@greenearth.org',
       ngoType: 'ENVIRONMENTAL',
       registrationNumber: 'NGO-UAE-2021-0118',
-      verified: false, // pending verification
     },
   })
 

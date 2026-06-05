@@ -1,0 +1,2 @@
+ALTER TABLE "Company" DROP COLUMN IF EXISTS "verified";
+ALTER TABLE "Company" DROP COLUMN IF EXISTS "ngoDiscount";

@@ -148,12 +148,6 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-secondary-500 mt-1 text-sm">
             {company?.name ?? 'مؤسستك'} · {roleLabel(session.role, m)}
-            {company?.verified && (
-              <span className="ms-2 inline-flex items-center gap-1 text-emerald-600 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                {m.dashboard.verifiedNgo}
-              </span>
-            )}
           </p>
         </div>
         <Link href="/products">
