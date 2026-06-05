@@ -14,3 +14,7 @@ coverage
 .turbo
 next-env.d.ts.bak
 tsconfig.tsbuildinfo
+
+# Python cache
+__pycache__/
+*.pyc
