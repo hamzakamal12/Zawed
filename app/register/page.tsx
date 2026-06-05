@@ -6,12 +6,24 @@ import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Input, { Label, Select } from '@/components/ui/Input'
 
+const NGO_TYPES = [
+  { value: 'CHARITY', label: 'Charity' },
+  { value: 'FOUNDATION', label: 'Foundation' },
+  { value: 'HUMANITARIAN', label: 'Humanitarian' },
+  { value: 'EDUCATIONAL', label: 'Educational' },
+  { value: 'HEALTH', label: 'Health & Medical' },
+  { value: 'ENVIRONMENTAL', label: 'Environmental' },
+  { value: 'OTHER', label: 'Other' },
+]
+
 export default function RegisterPage() {
   const router = useRouter()
   const [mode, setMode] = useState<'company' | 'invite'>('company')
-  const [companyName, setCompanyName] = useState('')
-  const [companyAddress, setCompanyAddress] = useState('')
+  const [orgName, setOrgName] = useState('')
+  const [orgAddress, setOrgAddress] = useState('')
   const [taxId, setTaxId] = useState('')
+  const [ngoType, setNgoType] = useState('OTHER')
+  const [registrationNumber, setRegistrationNumber] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,9 +40,11 @@ export default function RegisterPage() {
       const body = mode === 'company'
         ? {
             mode,
-            companyName,
-            companyAddress,
+            companyName: orgName,
+            companyAddress: orgAddress,
             taxId,
+            ngoType,
+            registrationNumber,
             name,
             email,
             password,
@@ -70,7 +84,7 @@ export default function RegisterPage() {
         <div className="bg-white rounded-lg border border-secondary-200 shadow-sm p-8">
           <h1 className="text-2xl font-bold text-secondary-900">Create your account</h1>
           <p className="text-sm text-secondary-500 mt-1">
-            Register a new company or join an existing one.
+            Register your NGO or join an existing organization.
           </p>
 
           <div className="mt-5 inline-flex rounded-md border border-secondary-200 p-1 bg-secondary-50">
@@ -81,7 +95,7 @@ export default function RegisterPage() {
                 mode === 'company' ? 'bg-white shadow text-secondary-900' : 'text-secondary-600'
               }`}
             >
-              New company
+              Register NGO
             </button>
             <button
               type="button"
@@ -98,22 +112,47 @@ export default function RegisterPage() {
             {mode === 'company' ? (
               <>
                 <div>
-                  <Label htmlFor="companyName">Company name</Label>
+                  <Label htmlFor="orgName">Organization name</Label>
                   <Input
-                    id="companyName"
+                    id="orgName"
                     required
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Acme Corp"
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    placeholder="Hope Foundation"
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="ngoType">Organization type</Label>
+                    <Select
+                      id="ngoType"
+                      value={ngoType}
+                      onChange={(e) => setNgoType(e.target.value)}
+                    >
+                      {NGO_TYPES.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="registrationNumber">NGO Registration # (optional)</Label>
+                    <Input
+                      id="registrationNumber"
+                      value={registrationNumber}
+                      onChange={(e) => setRegistrationNumber(e.target.value)}
+                      placeholder="NGO-12345"
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="address">Address (optional)</Label>
                     <Input
                       id="address"
-                      value={companyAddress}
-                      onChange={(e) => setCompanyAddress(e.target.value)}
+                      value={orgAddress}
+                      onChange={(e) => setOrgAddress(e.target.value)}
                       placeholder="123 Main St"
                     />
                   </div>
@@ -128,13 +167,15 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <p className="text-xs text-secondary-500">
-                  You will be set up as the company's first <strong>Procurement Manager</strong>.
+                  You will be set up as the organization&apos;s first{' '}
+                  <strong>Procurement Manager</strong>. An admin will verify your NGO status to
+                  unlock special pricing.
                 </p>
               </>
             ) : (
               <>
                 <div>
-                  <Label htmlFor="companyCode">Company code</Label>
+                  <Label htmlFor="companyCode">Organization code</Label>
                   <Input
                     id="companyCode"
                     required

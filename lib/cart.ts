@@ -31,14 +31,17 @@ export interface CartLineComputed {
 
 export interface CartTotals {
   subtotal: number
+  discountAmount: number
+  discountedSubtotal: number
   taxAmount: number
   totalAmount: number
 }
 
 /**
  * Re-resolve unit prices for every item from current price tiers, then compute totals.
+ * ngoDiscountRate is a decimal ratio (e.g. 0.10 = 10%) applied to verified NGO companies.
  */
-export async function computeCart(cartId: string): Promise<{
+export async function computeCart(cartId: string, ngoDiscountRate = 0): Promise<{
   lines: CartLineComputed[]
   totals: CartTotals
 }> {
@@ -75,10 +78,21 @@ export async function computeCart(cartId: string): Promise<{
   })
 
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0)
-  const taxAmount = lines.reduce((s, l) => s + l.taxAmount, 0)
+  const rawTaxAmount = lines.reduce((s, l) => s + l.taxAmount, 0)
+
+  // NGO discount reduces the pre-tax subtotal; tax is re-computed on the discounted amount.
+  const discountAmount = subtotal * ngoDiscountRate
+  const discountedSubtotal = subtotal - discountAmount
+  const taxAmount = rawTaxAmount * (1 - ngoDiscountRate)
 
   return {
     lines,
-    totals: { subtotal, taxAmount, totalAmount: subtotal + taxAmount },
+    totals: {
+      subtotal,
+      discountAmount,
+      discountedSubtotal,
+      taxAmount,
+      totalAmount: discountedSubtotal + taxAmount,
+    },
   }
 }

@@ -13,6 +13,7 @@ import {
   FiSettings,
   FiUsers,
   FiBox,
+  FiGlobe,
 } from 'react-icons/fi'
 import type { Role } from '@prisma/client'
 
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
 
 const ADMIN_NAV: NavItem[] = [
   { href: '/admin', label: 'Admin Overview', icon: <FiSettings />, roles: ['ADMIN'] },
+  { href: '/admin/organizations', label: 'Organizations', icon: <FiGlobe />, roles: ['ADMIN'] },
   { href: '/admin/products', label: 'Manage Products', icon: <FiBox />, roles: ['ADMIN'] },
   { href: '/admin/orders', label: 'All Orders', icon: <FiClipboard />, roles: ['ADMIN'] },
   { href: '/admin/users', label: 'Users', icon: <FiUsers />, roles: ['ADMIN'] },

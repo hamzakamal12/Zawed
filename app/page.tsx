@@ -19,7 +19,7 @@ export default function HomePage() {
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm">Create company</Button>
+              <Button size="sm">Register your NGO</Button>
             </Link>
           </div>
         </div>
@@ -29,19 +29,19 @@ export default function HomePage() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-semibold tracking-wide uppercase">
-              B2B Procurement
+              NGO Procurement Platform
             </span>
             <h1 className="mt-4 text-4xl lg:text-5xl font-bold text-secondary-900 leading-tight">
-              Corporate procurement, finally without the spreadsheets.
+              Everything your NGO needs, ordered in minutes.
             </h1>
             <p className="mt-6 text-lg text-secondary-600 leading-relaxed">
-              Zawed gives your office a structured catalog for pantry &amp; supplies,
-              tiered volume pricing, multi-step approval, and automated tax invoices —
-              all in one place.
+              Zawed gives NGOs and non-profits a structured catalog for office essentials —
+              coffee, tea, water, toner, ink, and more — with special NGO pricing, a built-in
+              approval workflow, and automated tax invoices.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/register">
-                <Button size="lg">Get started</Button>
+                <Button size="lg">Register your NGO</Button>
               </Link>
               <Link href="/login">
                 <Button variant="outline" size="lg">
@@ -52,10 +52,22 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { title: 'Tiered Pricing', desc: 'Automatic volume discounts based on quantity.' },
-              { title: 'Approval Workflow', desc: 'Staff submits, Manager approves, you save.' },
-              { title: 'Cash on Delivery', desc: 'Simple checkout with PDF tax invoices.' },
-              { title: 'Quick Reorder', desc: 'One click to repeat last month\'s order.' },
+              {
+                title: 'Special NGO Pricing',
+                desc: 'Verified NGOs unlock exclusive discounts on top of volume tiered pricing.',
+              },
+              {
+                title: 'Approval Workflow',
+                desc: 'Staff submits, Procurement Manager approves — full audit trail.',
+              },
+              {
+                title: 'Cash on Delivery',
+                desc: 'Simple checkout with automated PDF tax invoices.',
+              },
+              {
+                title: 'Recurring Orders',
+                desc: 'Set weekly or monthly subscriptions for essentials like coffee and toner.',
+              },
             ].map((f) => (
               <div
                 key={f.title}
@@ -67,10 +79,34 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+
+        {/* Product categories showcase */}
+        <div className="mt-20">
+          <h2 className="text-2xl font-bold text-secondary-900 text-center mb-10">
+            Everything your organization needs
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { emoji: '☕', label: 'Beverages', desc: 'Coffee, tea, water & juice' },
+              { emoji: '🖨️', label: 'Printing', desc: 'Toner, ink & paper' },
+              { emoji: '✏️', label: 'Office Supplies', desc: 'Stationery & equipment' },
+              { emoji: '🧴', label: 'Cleaning', desc: 'Sanitizer, wipes & soap' },
+            ].map((cat) => (
+              <div
+                key={cat.label}
+                className="text-center p-6 rounded-xl border border-secondary-200 bg-white hover:shadow-md transition-shadow"
+              >
+                <div className="text-4xl mb-3">{cat.emoji}</div>
+                <div className="font-semibold text-secondary-900">{cat.label}</div>
+                <div className="text-sm text-secondary-500 mt-1">{cat.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
 
       <footer className="border-t border-secondary-200 bg-white py-8 text-center text-sm text-secondary-500">
-        &copy; {new Date().getFullYear()} Zawed. All rights reserved.
+        &copy; {new Date().getFullYear()} Zawed — Built for NGOs &amp; non-profits.
       </footer>
     </div>
   )

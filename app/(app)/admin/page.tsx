@@ -8,9 +8,10 @@ import { formatCurrency, formatDateTime } from '@/lib/utils'
 export default async function AdminDashboardPage() {
   await requireRole(['ADMIN'])
 
-  const [totalCompanies, totalUsers, totalProducts, lowStock, pendingOrders, recentOrders] =
+  const [totalCompanies, verifiedNgos, totalUsers, totalProducts, lowStock, pendingOrders, recentOrders] =
     await Promise.all([
       prisma.company.count(),
+      prisma.company.count({ where: { verified: true } }),
       prisma.user.count(),
       prisma.product.count(),
       prisma.product.findMany({
@@ -40,11 +41,12 @@ export default async function AdminDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-secondary-900">Admin overview</h1>
-        <p className="text-secondary-500 mt-1">Global stats across all companies on the platform.</p>
+        <p className="text-secondary-500 mt-1">Global stats across all NGOs and organizations on the platform.</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat label="Companies" value={totalCompanies} />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <Stat label="Organizations" value={totalCompanies} />
+        <Stat label="Verified NGOs" value={verifiedNgos} />
         <Stat label="Users" value={totalUsers} />
         <Stat label="Products" value={totalProducts} />
         <Stat label="Pending orders" value={pendingOrders} />

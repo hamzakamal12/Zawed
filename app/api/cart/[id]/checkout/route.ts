@@ -46,7 +46,10 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     }
   }
 
-  const { lines, totals } = await computeCart(cart.id)
+  const company = await prisma.company.findUnique({ where: { id: cart.companyId } })
+  const ngoDiscountRate = company?.verified ? Number(company.ngoDiscount) : 0
+
+  const { lines, totals } = await computeCart(cart.id, ngoDiscountRate)
 
   const order = await prisma.$transaction(async (tx) => {
     const created = await tx.order.create({
@@ -57,6 +60,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
         status: 'PENDING_PAYMENT',
         paymentMethod: 'CASH_ON_DELIVERY',
         subtotal: totals.subtotal,
+        discountAmount: totals.discountAmount,
         taxAmount: totals.taxAmount,
         totalAmount: totals.totalAmount,
         items: {

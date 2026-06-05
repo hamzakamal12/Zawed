@@ -5,11 +5,15 @@ import { prisma } from '@/lib/db'
 import { SESSION_COOKIE, SESSION_MAX_AGE, signSession } from '@/lib/auth'
 import { hashPassword } from '@/lib/password'
 
+const NGO_TYPES = ['CHARITY', 'FOUNDATION', 'HUMANITARIAN', 'EDUCATIONAL', 'HEALTH', 'ENVIRONMENTAL', 'OTHER'] as const
+
 const newCompany = z.object({
   mode: z.literal('company'),
   companyName: z.string().min(1),
   companyAddress: z.string().optional().nullable(),
   taxId: z.string().optional().nullable(),
+  ngoType: z.enum(NGO_TYPES).optional().nullable(),
+  registrationNumber: z.string().optional().nullable(),
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
@@ -51,6 +55,8 @@ export async function POST(req: Request) {
           name: data.companyName,
           address: data.companyAddress || null,
           taxId: data.taxId || null,
+          ngoType: data.ngoType || null,
+          registrationNumber: data.registrationNumber || null,
           email,
         },
       })

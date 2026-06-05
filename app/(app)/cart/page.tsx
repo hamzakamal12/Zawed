@@ -23,7 +23,10 @@ export default async function CartPage() {
     cart = await getOrCreateActiveCart(session.sub, session.companyId)
   }
 
-  const { lines, totals } = await computeCart(cart.id)
+  const company = await prisma.company.findUnique({ where: { id: session.companyId } })
+  const ngoDiscountRate = company?.verified ? Number(company.ngoDiscount) : 0
+
+  const { lines, totals } = await computeCart(cart.id, ngoDiscountRate)
 
   const items = await prisma.cartItem.findMany({
     where: { cartId: cart.id },
@@ -104,6 +107,13 @@ export default async function CartPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <Row label="Subtotal" value={formatCurrency(totals.subtotal)} />
+              {totals.discountAmount > 0 && (
+                <Row
+                  label={`NGO Discount (${Math.round(ngoDiscountRate * 100)}%)`}
+                  value={`− ${formatCurrency(totals.discountAmount)}`}
+                  highlight
+                />
+              )}
               <Row label="Tax" value={formatCurrency(totals.taxAmount)} />
               <div className="border-t border-secondary-100 pt-3 flex items-center justify-between">
                 <span className="font-semibold">Total</span>
@@ -129,11 +139,11 @@ export default async function CartPage() {
   )
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-secondary-600">{label}</span>
-      <span className="tabular-nums">{value}</span>
+      <span className={highlight ? 'text-green-700 font-medium' : 'text-secondary-600'}>{label}</span>
+      <span className={`tabular-nums ${highlight ? 'text-green-700 font-medium' : ''}`}>{value}</span>
     </div>
   )
 }
