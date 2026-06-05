@@ -2,14 +2,14 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Zawed — B2B Procurement Platform',
+  title: 'زاود — منصة التداول الاجتماعي',
   description:
-    'Corporate office supplies and pantry procurement with tiered pricing, approval workflows, and automated invoicing.',
+    'منصة التواصل والتحليل المالي للمستثمرين والمتداولين — أسهم، عملات رقمية، عقارات، وأكثر',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="ltr">
       <body className="font-sans antialiased">{children}</body>
     </html>
   )

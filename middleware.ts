@@ -21,15 +21,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Role-gate admin routes.
-  if (pathname.startsWith('/admin') && session.role !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
-  }
-  // Manager routes (approvals).
-  if (pathname.startsWith('/approvals') && session.role !== 'MANAGER' && session.role !== 'ADMIN') {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
-  }
-
   return NextResponse.next()
 }
 

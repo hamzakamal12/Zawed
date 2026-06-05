@@ -24,9 +24,9 @@ export async function POST(req: Request) {
   const token = await signSession({
     sub: user.id,
     email: user.email,
+    username: user.username,
     name: user.name,
     role: user.role,
-    companyId: user.companyId,
   })
   cookies().set(SESSION_COOKIE, token, {
     httpOnly: true,

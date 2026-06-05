@@ -1,108 +1,93 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import Link from 'next/link'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Button from '@/components/ui/Button'
-import Input, { Label } from '@/components/ui/Input'
+import Link from 'next/link'
 
 function LoginForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const next = searchParams.get('next') || '/dashboard'
+  const params = useSearchParams()
+  const next = params.get('next') ?? '/feed'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const onSubmit = async (e: React.FormEvent) => {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
     setLoading(true)
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.error || 'Invalid credentials')
-        setLoading(false)
-        return
-      }
+    setError('')
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    if (res.ok) {
       router.push(next)
       router.refresh()
-    } catch {
-      setError('Network error')
-      setLoading(false)
+    } else {
+      const data = await res.json()
+      setError(data.error ?? 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
     }
+    setLoading(false)
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-4">
+    <form onSubmit={submit} className="space-y-4">
       <div>
-        <Label htmlFor="email">Work email</Label>
-        <Input
-          id="email"
+        <label className="text-slate-400 text-sm block mb-1">البريد الإلكتروني</label>
+        <input
           type="email"
-          required
-          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
+          required
+          autoComplete="email"
+          className="input-field"
+          placeholder="example@email.com"
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
+        <label className="text-slate-400 text-sm block mb-1">كلمة المرور</label>
+        <input
           type="password"
-          required
-          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
+          required
+          autoComplete="current-password"
+          className="input-field"
+          placeholder="••••••"
         />
       </div>
-
-      {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-          {error}
-        </div>
-      )}
-
-      <Button type="submit" disabled={loading} className="w-full" size="lg">
-        {loading ? 'Signing in…' : 'Sign in'}
-      </Button>
+      {error && <p className="text-bear-400 text-sm">{error}</p>}
+      <button
+        type="submit"
+        disabled={loading}
+        className="btn-primary w-full disabled:opacity-50"
+      >
+        {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+      </button>
     </form>
   )
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-white to-secondary-50">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-md bg-primary-600 text-white flex items-center justify-center font-bold">
-              Z
-            </div>
-            <span className="font-bold text-xl">Zawed</span>
-          </Link>
+        <div className="text-center mb-8">
+          <Link href="/" className="text-4xl font-black text-primary-400 tracking-tight">زاود</Link>
+          <p className="text-slate-400 text-sm mt-2">منصة التداول الاجتماعي</p>
         </div>
-        <div className="bg-white rounded-lg border border-secondary-200 shadow-sm p-8">
-          <h1 className="text-2xl font-bold text-secondary-900">Welcome back</h1>
-          <p className="text-sm text-secondary-500 mt-1">Sign in to your Zawed account.</p>
-
-          <Suspense fallback={<div className="mt-6 h-44" />}>
+        <div className="card p-6">
+          <h1 className="text-slate-100 font-bold text-xl mb-5">تسجيل الدخول</h1>
+          <Suspense>
             <LoginForm />
           </Suspense>
-
-          <p className="mt-6 text-sm text-secondary-600 text-center">
-            New to Zawed?{' '}
-            <Link href="/register" className="text-primary-600 font-medium hover:underline">
-              Create a company
+          <p className="text-slate-500 text-sm mt-4 text-center">
+            ليس لديك حساب؟{' '}
+            <Link href="/register" className="text-primary-400 hover:text-primary-300">
+              إنشاء حساب
             </Link>
           </p>
         </div>

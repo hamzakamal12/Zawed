@@ -5,15 +5,60 @@
 @layer base {
   html,
   body {
-    @apply bg-secondary-50 text-secondary-900;
+    @apply bg-background text-slate-100;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
   }
 }
 
 @layer components {
   .container-narrow {
-    @apply max-w-3xl mx-auto px-4;
+    @apply max-w-2xl mx-auto px-4;
   }
   .container-wide {
     @apply max-w-7xl mx-auto px-4 sm:px-6;
+  }
+  .card {
+    @apply bg-surface border border-border rounded-xl;
+  }
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-black font-semibold px-4 py-2 rounded-lg transition-colors;
+  }
+  .btn-secondary {
+    @apply bg-surface-2 hover:bg-slate-700 text-slate-100 font-medium px-4 py-2 rounded-lg border border-border transition-colors;
+  }
+  .btn-ghost {
+    @apply hover:bg-surface-2 text-slate-400 hover:text-slate-100 px-3 py-2 rounded-lg transition-colors;
+  }
+  .input-field {
+    @apply bg-surface-2 border border-border rounded-lg px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 w-full;
+  }
+  .badge-bull {
+    @apply inline-flex items-center gap-1 text-bull-500 bg-bull-500/10 text-xs font-semibold px-2 py-0.5 rounded-full;
+  }
+  .badge-bear {
+    @apply inline-flex items-center gap-1 text-bear-500 bg-bear-500/10 text-xs font-semibold px-2 py-0.5 rounded-full;
+  }
+  .badge-neutral {
+    @apply inline-flex items-center gap-1 text-slate-400 bg-slate-700/40 text-xs font-semibold px-2 py-0.5 rounded-full;
+  }
+  .reputation-ring {
+    @apply ring-2 ring-primary-500;
   }
 }
