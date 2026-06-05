@@ -66,12 +66,12 @@ Open <http://localhost:3000>.
 
 All demo accounts use password **`password123`**.
 
-| Email                | Role                  | Company |
-| -------------------- | --------------------- | ------- |
-| `admin@zawed.com`    | System Admin          | —       |
-| `manager@acme.com`   | Procurement Manager   | Acme    |
-| `staff@acme.com`     | Staff                 | Acme    |
-| `manager@globex.com` | Procurement Manager   | Globex  |
+| Email                          | Role                | Organization                              |
+| ------------------------------ | ------------------- | ----------------------------------------- |
+| `admin@zawed.com`              | System Admin        | —                                         |
+| `manager@hopefoundation.org`   | Procurement Manager | Hope Foundation (verified NGO, 10% discount) |
+| `staff@hopefoundation.org`     | Staff               | Hope Foundation                           |
+| `manager@greenearth.org`       | Procurement Manager | Green Earth (pending verification)        |
 
 ## Workflow
 
@@ -117,6 +117,45 @@ prisma/
   seed.ts             Demo dataset
 middleware.ts         Cookie-session auth gate & role-based route protection
 ```
+
+## Deploy to production (custom domain)
+
+Zawed is a standard Next.js app, so **Vercel** is the path of least resistance. You need three things: code on GitHub, a hosted Postgres database, and a domain.
+
+### 1. Push the code to GitHub
+
+Vercel deploys *from* a GitHub repo, so the branch has to be on GitHub first.
+
+### 2. Create a hosted Postgres database
+
+Use any managed Postgres ([Neon](https://neon.tech), [Supabase](https://supabase.com), or Vercel Postgres — all have free tiers). Create a database and copy its connection string. For serverless (Vercel), use the **pooled** connection string and keep `?sslmode=require`.
+
+### 3. Import the repo into Vercel
+
+[vercel.com/new](https://vercel.com/new) → import the repo. Framework auto-detects as Next.js. Add these **Environment Variables**:
+
+| Variable          | Value                                                            |
+| ----------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`    | your hosted Postgres connection string                           |
+| `AUTH_SECRET`     | long random string — `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
+| `DEFAULT_TAX_RATE`| `0.05`                                                           |
+
+Override the **Build Command** to run migrations on each deploy:
+
+```
+prisma generate && prisma migrate deploy && next build
+```
+
+Deploy. Vercel gives you a `*.vercel.app` URL. Seed the database once (locally, pointing `DATABASE_URL` at the hosted DB): `npm run db:seed`. **Change the demo passwords before going live.**
+
+### 4. Attach your custom domain
+
+1. Buy a domain (Namecheap, Cloudflare, Google Domains, etc.) — ~$10–15/year.
+2. Vercel → Project → **Settings → Domains** → add `zawed.com` and `www.zawed.com`.
+3. At your registrar's DNS, add the records Vercel shows you — typically:
+   - **A** record `@` → `76.76.21.21`
+   - **CNAME** `www` → `cname.vercel-dns.com`
+4. Vercel auto-issues the SSL certificate once DNS propagates (minutes to a couple of hours).
 
 ## License
 
