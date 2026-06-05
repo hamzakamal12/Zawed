@@ -1,0 +1,61 @@
+{
+  "common": {
+    "save": "حفظ", "cancel": "إلغاء", "loading": "جارٍ التحميل…",
+    "viewAll": "عرض الكل", "back": "رجوع", "signOut": "تسجيل الخروج"
+  },
+  "nav": {
+    "main": "الرئيسية", "admin": "الإدارة", "procurement": "المشتريات",
+    "dashboard": "لوحة التحكم", "catalog": "الكتالوج", "myCart": "سلة التسوق",
+    "approvals": "الموافقات", "orders": "الطلبات", "subscriptions": "الاشتراكات",
+    "overview": "نظرة عامة", "organizations": "المنظمات", "products": "المنتجات",
+    "allOrders": "جميع الطلبات", "users": "المستخدمون",
+    "staffMember": "موظف", "procurementManager": "مدير المشتريات",
+    "systemAdmin": "مدير النظام", "activeSession": "جلسة نشطة"
+  },
+  "home": {
+    "heroBadge": "منصة مخصصة للمنظمات غير الربحية",
+    "heroTitle": "كل ما تحتاجه منظمتك،",
+    "heroHighlight": "في دقائق معدودة.",
+    "heroDesc": "منصة مشتريات متكاملة للمنظمات غير الربحية — خصومات حصرية، سير عمل متعدد المستويات للموافقات، أسعار مجدولة حسب الكمية، وفواتير ضريبية آلية في مكان واحد.",
+    "ctaRegister": "سجّل منظمتك", "ctaSignIn": "تسجيل الدخول",
+    "getStarted": "ابدأ الآن",
+    "featuresTitle": "مصمّم خصيصاً لفرق المشتريات",
+    "featuresDesc": "من الكتالوج إلى الفاتورة، صُمّم ليناسب طريقة عمل المنظمات فعلياً.",
+    "f1Title": "أسعار حصرية للمنظمات",
+    "f1Desc": "تحصل المنظمات المعتمدة على خصومات خاصة فوق الأسعار المجدولة حسب الكمية.",
+    "f2Title": "سير عمل الموافقات",
+    "f2Desc": "يرسل الموظف، يوافق مدير المشتريات — مسار تدقيق كامل لكل طلب.",
+    "f3Title": "فواتير ضريبية PDF",
+    "f3Desc": "فواتير ضريبية آلية تُنشأ عند الدفع وجاهزة للتنزيل فوراً.",
+    "f4Title": "الطلبات المتكررة",
+    "f4Desc": "اضبط اشتراكات أسبوعية أو شهرية للقهوة والحبر والمستلزمات الأساسية.",
+    "categoriesTitle": "فئات المنتجات",
+    "categoriesDesc": "أكثر من 100 منتج في 5 فئات",
+    "catBeverages": "المشروبات", "catBeveragesDesc": "قهوة، شاي وماء",
+    "catPrinting": "الطباعة", "catPrintingDesc": "تونر، حبر وورق",
+    "catOffice": "مستلزمات المكتب", "catOfficeDesc": "قرطاسية وأجهزة",
+    "catCleaning": "التنظيف", "catCleaningDesc": "معقمات ومناديل",
+    "bannerTitle": "هل أنت مستعد لتطوير منظومة مشترياتك؟",
+    "bannerDesc": "انضم إلى المنظمات التي تستخدم زوّد لتوفير الوقت والاستفادة من الخصومات الحصرية.",
+    "bannerCta": "سجّل مجاناً", "footerTag": "مصمّم للمنظمات غير الربحية."
+  },
+  "auth": {
+    "loginTitle": "مرحباً بعودتك", "loginDesc": "سجّل دخولك إلى حساب زوّد.",
+    "emailLabel": "البريد الإلكتروني", "passwordLabel": "كلمة المرور",
+    "signingIn": "جارٍ تسجيل الدخول…", "signInBtn": "تسجيل الدخول",
+    "newToZawed": "لا تمتلك حساباً؟", "createCompany": "إنشاء حساب",
+    "invalidCreds": "بيانات الدخول غير صحيحة", "networkError": "خطأ في الشبكة"
+  },
+  "dashboard": {
+    "greet": "أهلاً", "verifiedNgo": "منظمة معتمدة", "newOrder": "طلب جديد",
+    "totalOrders": "إجمالي الطلبات", "totalSpend": "إجمالي الإنفاق",
+    "pendingApprovals": "بانتظار الموافقة", "organization": "المنظمة",
+    "recentOrders": "أحدث الطلبات", "viewAll": "عرض الكل",
+    "noOrdersYet": "لا توجد طلبات بعد", "browseCatalog": "تصفّح الكتالوج",
+    "quickActions": "الإجراءات السريعة",
+    "browseCatalogBtn": "تصفّح الكتالوج", "viewCartBtn": "عرض سلة التسوق",
+    "reorderBtn": "إعادة طلب سابق", "reviewApprovalsBtn": "مراجعة الموافقات",
+    "adminDashboardBtn": "لوحة الإدارة",
+    "staff": "موظف", "manager": "مدير المشتريات", "sysAdmin": "مدير النظام"
+  }
+}

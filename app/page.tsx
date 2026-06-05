@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { getMessages } from '@/lib/i18n'
 import {
   FiPackage,
   FiCheckSquare,
@@ -12,61 +14,63 @@ import {
   FiShield,
 } from 'react-icons/fi'
 
-const FEATURES = [
-  {
-    icon: <FiShield className="w-5 h-5" />,
-    title: 'Exclusive NGO Pricing',
-    desc: 'Verified NGOs unlock special discounts stacked on top of volume-tiered pricing.',
-    color: 'bg-blue-100 text-blue-600',
-  },
-  {
-    icon: <FiCheckSquare className="w-5 h-5" />,
-    title: 'Approval Workflow',
-    desc: 'Staff submits, Procurement Manager approves — full audit trail on every order.',
-    color: 'bg-emerald-100 text-emerald-600',
-  },
-  {
-    icon: <FiFileText className="w-5 h-5" />,
-    title: 'PDF Tax Invoices',
-    desc: 'Automated tax invoices generated at checkout, ready to download instantly.',
-    color: 'bg-violet-100 text-violet-600',
-  },
-  {
-    icon: <FiRepeat className="w-5 h-5" />,
-    title: 'Recurring Orders',
-    desc: 'Set weekly or monthly subscriptions for coffee, toner, and other essentials.',
-    color: 'bg-amber-100 text-amber-600',
-  },
-]
-
-const CATEGORIES = [
-  {
-    icon: <FiDroplet className="w-6 h-6" />,
-    label: 'Beverages',
-    desc: 'Coffee, tea & water',
-    color: 'bg-sky-100 text-sky-600',
-  },
-  {
-    icon: <FiPrinter className="w-6 h-6" />,
-    label: 'Printing',
-    desc: 'Toner, ink & paper',
-    color: 'bg-indigo-100 text-indigo-600',
-  },
-  {
-    icon: <FiEdit3 className="w-6 h-6" />,
-    label: 'Office Supplies',
-    desc: 'Stationery & USB',
-    color: 'bg-rose-100 text-rose-600',
-  },
-  {
-    icon: <FiPackage className="w-6 h-6" />,
-    label: 'Cleaning',
-    desc: 'Sanitizer & wipes',
-    color: 'bg-emerald-100 text-emerald-600',
-  },
-]
-
 export default function HomePage() {
+  const m = getMessages()
+
+  const FEATURES = [
+    {
+      icon: <FiShield className="w-5 h-5" />,
+      title: m.home.f1Title,
+      desc: m.home.f1Desc,
+      color: 'bg-blue-100 text-blue-600',
+    },
+    {
+      icon: <FiCheckSquare className="w-5 h-5" />,
+      title: m.home.f2Title,
+      desc: m.home.f2Desc,
+      color: 'bg-emerald-100 text-emerald-600',
+    },
+    {
+      icon: <FiFileText className="w-5 h-5" />,
+      title: m.home.f3Title,
+      desc: m.home.f3Desc,
+      color: 'bg-violet-100 text-violet-600',
+    },
+    {
+      icon: <FiRepeat className="w-5 h-5" />,
+      title: m.home.f4Title,
+      desc: m.home.f4Desc,
+      color: 'bg-amber-100 text-amber-600',
+    },
+  ]
+
+  const CATEGORIES = [
+    {
+      icon: <FiDroplet className="w-6 h-6" />,
+      label: m.home.catBeverages,
+      desc: m.home.catBeveragesDesc,
+      color: 'bg-sky-100 text-sky-600',
+    },
+    {
+      icon: <FiPrinter className="w-6 h-6" />,
+      label: m.home.catPrinting,
+      desc: m.home.catPrintingDesc,
+      color: 'bg-indigo-100 text-indigo-600',
+    },
+    {
+      icon: <FiEdit3 className="w-6 h-6" />,
+      label: m.home.catOffice,
+      desc: m.home.catOfficeDesc,
+      color: 'bg-rose-100 text-rose-600',
+    },
+    {
+      icon: <FiPackage className="w-6 h-6" />,
+      label: m.home.catCleaning,
+      desc: m.home.catCleaningDesc,
+      color: 'bg-emerald-100 text-emerald-600',
+    },
+  ]
+
   return (
     <div className="min-h-screen flex flex-col bg-secondary-50">
       {/* Header */}
@@ -78,15 +82,16 @@ export default function HomePage() {
             </div>
             <div>
               <span className="font-extrabold text-secondary-900 tracking-tight">Zawed</span>
-              <span className="ml-1.5 text-xs text-secondary-400 font-medium hidden sm:inline">Procurement</span>
+              <span className="ms-1.5 text-xs text-secondary-400 font-medium hidden sm:inline">Procurement</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Link href="/login">
-              <Button variant="ghost" size="sm">Sign in</Button>
+              <Button variant="ghost" size="sm">{m.auth.signInBtn}</Button>
             </Link>
             <Link href="/register">
-              <Button size="sm">Get started</Button>
+              <Button size="sm">{m.home.getStarted}</Button>
             </Link>
           </div>
         </div>
@@ -99,25 +104,24 @@ export default function HomePage() {
             <div className="max-w-3xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-white/90 mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Built exclusively for NGOs & non-profits
+                {m.home.heroBadge}
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-balance">
-                Everything your NGO needs,{' '}
-                <span className="text-sky-300">ordered in minutes.</span>
+                {m.home.heroTitle}{' '}
+                <span className="text-sky-300">{m.home.heroHighlight}</span>
               </h1>
               <p className="mt-6 text-lg text-white/70 leading-relaxed max-w-2xl mx-auto">
-                A structured procurement platform for NGOs — verified discounts, multi-level
-                approval workflows, tiered pricing, and automated invoices all in one place.
+                {m.home.heroDesc}
               </p>
               <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
                 <Link href="/register">
                   <Button size="lg" className="bg-white text-primary-700 hover:bg-white/90 shadow-lg hover:shadow-xl from-white to-white">
-                    Register your NGO <FiArrowRight />
+                    {m.home.ctaRegister} <FiArrowRight />
                   </Button>
                 </Link>
                 <Link href="/login">
                   <Button size="lg" variant="ghost" className="text-white hover:bg-white/10">
-                    Sign in to your account
+                    {m.home.ctaSignIn}
                   </Button>
                 </Link>
               </div>
@@ -131,10 +135,10 @@ export default function HomePage() {
         <section className="container-wide py-20">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-secondary-900 tracking-tight">
-              Purpose-built for procurement teams
+              {m.home.featuresTitle}
             </h2>
             <p className="mt-3 text-secondary-500 max-w-xl mx-auto">
-              Everything from catalog to invoice, designed around how NGOs actually buy.
+              {m.home.featuresDesc}
             </p>
           </div>
 
@@ -159,9 +163,9 @@ export default function HomePage() {
           <div className="container-wide">
             <div className="text-center mb-10">
               <h2 className="text-2xl font-extrabold text-secondary-900 tracking-tight">
-                Product categories
+                {m.home.categoriesTitle}
               </h2>
-              <p className="mt-2 text-secondary-500 text-sm">100+ SKUs across 5 categories</p>
+              <p className="mt-2 text-secondary-500 text-sm">{m.home.categoriesDesc}</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {CATEGORIES.map((cat) => (
@@ -183,15 +187,15 @@ export default function HomePage() {
         <section className="container-wide py-16">
           <div className="bg-hero-gradient rounded-2xl p-10 text-center text-white">
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Ready to streamline your procurement?
+              {m.home.bannerTitle}
             </h2>
             <p className="mt-3 text-white/70 max-w-md mx-auto">
-              Join NGOs using Zawed to cut procurement time and unlock verified discounts.
+              {m.home.bannerDesc}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/register">
                 <Button size="lg" className="bg-white text-primary-700 hover:bg-white/90 shadow-lg from-white to-white">
-                  Register free <FiArrowRight />
+                  {m.home.bannerCta} <FiArrowRight />
                 </Button>
               </Link>
             </div>
@@ -205,7 +209,7 @@ export default function HomePage() {
             <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-600 to-brand-blue text-white flex items-center justify-center font-bold text-xs">Z</div>
             <span className="font-semibold text-secondary-600">Zawed</span>
           </div>
-          <span>&copy; {new Date().getFullYear()} Zawed — Built for NGOs &amp; non-profits.</span>
+          <span>&copy; {new Date().getFullYear()} Zawed — {m.home.footerTag}</span>
         </div>
       </footer>
     </div>

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/session'
+import { getMessages, type Messages } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -20,6 +21,7 @@ import {
 
 export default async function DashboardPage() {
   const session = await requireSession()
+  const m = getMessages()
 
   const [stats, recentOrders, pendingApprovals, company] = await Promise.all([
     prisma.order.aggregate({
@@ -44,7 +46,7 @@ export default async function DashboardPage() {
 
   const STATS = [
     {
-      label: 'Total Orders',
+      label: m.dashboard.totalOrders,
       value: String(stats._count),
       icon: <FiShoppingBag className="w-5 h-5" />,
       bg: 'bg-stat-blue',
@@ -52,7 +54,7 @@ export default async function DashboardPage() {
       accent: 'bg-gradient-to-r from-blue-400 to-blue-600',
     },
     {
-      label: 'Total Spend',
+      label: m.dashboard.totalSpend,
       value: formatCurrency(totalSpend),
       icon: <FiDollarSign className="w-5 h-5" />,
       bg: 'bg-stat-green',
@@ -60,7 +62,7 @@ export default async function DashboardPage() {
       accent: 'bg-gradient-to-r from-emerald-400 to-emerald-600',
     },
     {
-      label: 'Pending Approvals',
+      label: m.dashboard.pendingApprovals,
       value: String(pendingApprovals),
       icon: <FiClock className="w-5 h-5" />,
       bg: 'bg-stat-amber',
@@ -68,7 +70,7 @@ export default async function DashboardPage() {
       accent: 'bg-gradient-to-r from-amber-400 to-amber-600',
     },
     {
-      label: 'Organization',
+      label: m.dashboard.organization,
       value: company?.name ?? '—',
       icon: <FiPackage className="w-5 h-5" />,
       bg: 'bg-stat-purple',
@@ -79,19 +81,19 @@ export default async function DashboardPage() {
   ]
 
   const QUICK_ACTIONS = [
-    { href: '/products', label: 'Browse Catalog', icon: <FiShoppingCart className="w-4 h-4" />, show: true },
-    { href: '/cart', label: 'View My Cart', icon: <FiPackage className="w-4 h-4" />, show: true },
-    { href: '/orders', label: 'Reorder Previous', icon: <FiRepeat className="w-4 h-4" />, show: true },
+    { href: '/products', label: m.dashboard.browseCatalogBtn, icon: <FiShoppingCart className="w-4 h-4" />, show: true },
+    { href: '/cart', label: m.dashboard.viewCartBtn, icon: <FiPackage className="w-4 h-4" />, show: true },
+    { href: '/orders', label: m.dashboard.reorderBtn, icon: <FiRepeat className="w-4 h-4" />, show: true },
     {
       href: '/approvals',
-      label: `Review Approvals${pendingApprovals > 0 ? ` (${pendingApprovals})` : ''}`,
+      label: `${m.dashboard.reviewApprovalsBtn}${pendingApprovals > 0 ? ` (${pendingApprovals})` : ''}`,
       icon: <FiCheckSquare className="w-4 h-4" />,
       show: session.role === 'MANAGER' || session.role === 'ADMIN',
       highlight: pendingApprovals > 0,
     },
     {
       href: '/admin',
-      label: 'Admin Dashboard',
+      label: m.dashboard.adminDashboardBtn,
       icon: <FiSettings className="w-4 h-4" />,
       show: session.role === 'ADMIN',
     },
@@ -103,21 +105,21 @@ export default async function DashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-secondary-900 tracking-tight">
-            Good day, {firstName} 👋
+            {m.dashboard.greet}, {firstName} 👋
           </h1>
           <p className="text-secondary-500 mt-1 text-sm">
-            {company?.name ?? 'Your organisation'} &middot; {roleLabel(session.role)}
+            {company?.name ?? 'Your organisation'} &middot; {roleLabel(session.role, m)}
             {company?.verified && (
-              <span className="ml-2 inline-flex items-center gap-1 text-emerald-600 font-medium">
+              <span className="ms-2 inline-flex items-center gap-1 text-emerald-600 font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Verified NGO
+                {m.dashboard.verifiedNgo}
               </span>
             )}
           </p>
         </div>
         <Link href="/products">
           <Button size="sm">
-            <FiPlus /> New order
+            <FiPlus /> {m.dashboard.newOrder}
           </Button>
         </Link>
       </div>
@@ -153,12 +155,12 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Orders</CardTitle>
+              <CardTitle>{m.dashboard.recentOrders}</CardTitle>
               <Link
                 href="/orders"
                 className="text-xs font-medium text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 transition-colors"
               >
-                View all <FiArrowRight className="w-3 h-3" />
+                {m.dashboard.viewAll} <FiArrowRight className="w-3 h-3 rtl:rotate-180" />
               </Link>
             </div>
           </CardHeader>
@@ -168,10 +170,10 @@ export default async function DashboardPage() {
                 <div className="w-14 h-14 rounded-2xl bg-secondary-100 flex items-center justify-center mx-auto mb-4">
                   <FiShoppingBag className="w-6 h-6 text-secondary-400" />
                 </div>
-                <p className="text-secondary-500 text-sm font-medium mb-4">No orders yet</p>
+                <p className="text-secondary-500 text-sm font-medium mb-4">{m.dashboard.noOrdersYet}</p>
                 <Link href="/products">
                   <Button size="sm">
-                    <FiPlus /> Browse catalog
+                    <FiPlus /> {m.dashboard.browseCatalog}
                   </Button>
                 </Link>
               </div>
@@ -206,12 +208,12 @@ export default async function DashboardPage() {
         {/* Quick actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>{m.dashboard.quickActions}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {QUICK_ACTIONS.map((action) => (
               <Link key={action.href} href={action.href} className="block">
-                <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer ${
+                <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-start cursor-pointer ${
                   action.highlight
                     ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'
                     : 'border border-secondary-100 bg-white text-secondary-700 hover:bg-secondary-50 hover:border-secondary-200 hover:text-secondary-900'
@@ -220,7 +222,7 @@ export default async function DashboardPage() {
                     {action.icon}
                   </span>
                   {action.label}
-                  <FiArrowRight className="ml-auto w-3.5 h-3.5 opacity-40" />
+                  <FiArrowRight className="ms-auto w-3.5 h-3.5 opacity-40 rtl:rotate-180" />
                 </button>
               </Link>
             ))}
@@ -237,6 +239,6 @@ function OrderStatusBadge({ status }: { status: string }) {
   return <Badge variant="warning">Pending</Badge>
 }
 
-function roleLabel(role: string) {
-  return role === 'STAFF' ? 'Staff' : role === 'MANAGER' ? 'Procurement Manager' : 'System Admin'
+function roleLabel(role: string, m: Messages) {
+  return role === 'STAFF' ? m.dashboard.staff : role === 'MANAGER' ? m.dashboard.manager : m.dashboard.sysAdmin
 }

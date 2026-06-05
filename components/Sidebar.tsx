@@ -17,38 +17,43 @@ import {
   FiChevronRight,
 } from 'react-icons/fi'
 import type { Role } from '@prisma/client'
+import { useMessages } from '@/components/LocaleProvider'
+import type { Messages } from '@/lib/i18n'
+
+type NavKey = keyof Messages['nav']
 
 interface NavItem {
   href: string
-  label: string
+  navKey: NavKey
   icon: React.ReactNode
   roles: Role[]
 }
 
 const NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: <FiHome />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
-  { href: '/products', label: 'Catalog', icon: <FiPackage />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
-  { href: '/cart', label: 'My Cart', icon: <FiShoppingCart />, roles: ['STAFF', 'MANAGER'] },
-  { href: '/approvals', label: 'Approvals', icon: <FiCheckSquare />, roles: ['MANAGER', 'ADMIN'] },
-  { href: '/orders', label: 'Orders', icon: <FiClipboard />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
-  { href: '/subscriptions', label: 'Subscriptions', icon: <FiRepeat />, roles: ['MANAGER', 'ADMIN'] },
+  { href: '/dashboard', navKey: 'dashboard', icon: <FiHome />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
+  { href: '/products', navKey: 'catalog', icon: <FiPackage />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
+  { href: '/cart', navKey: 'myCart', icon: <FiShoppingCart />, roles: ['STAFF', 'MANAGER'] },
+  { href: '/approvals', navKey: 'approvals', icon: <FiCheckSquare />, roles: ['MANAGER', 'ADMIN'] },
+  { href: '/orders', navKey: 'orders', icon: <FiClipboard />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
+  { href: '/subscriptions', navKey: 'subscriptions', icon: <FiRepeat />, roles: ['MANAGER', 'ADMIN'] },
 ]
 
 const ADMIN_NAV: NavItem[] = [
-  { href: '/admin', label: 'Overview', icon: <FiSettings />, roles: ['ADMIN'] },
-  { href: '/admin/organizations', label: 'Organizations', icon: <FiGlobe />, roles: ['ADMIN'] },
-  { href: '/admin/products', label: 'Products', icon: <FiBox />, roles: ['ADMIN'] },
-  { href: '/admin/orders', label: 'All Orders', icon: <FiClipboard />, roles: ['ADMIN'] },
-  { href: '/admin/users', label: 'Users', icon: <FiUsers />, roles: ['ADMIN'] },
+  { href: '/admin', navKey: 'overview', icon: <FiSettings />, roles: ['ADMIN'] },
+  { href: '/admin/organizations', navKey: 'organizations', icon: <FiGlobe />, roles: ['ADMIN'] },
+  { href: '/admin/products', navKey: 'products', icon: <FiBox />, roles: ['ADMIN'] },
+  { href: '/admin/orders', navKey: 'allOrders', icon: <FiClipboard />, roles: ['ADMIN'] },
+  { href: '/admin/users', navKey: 'users', icon: <FiUsers />, roles: ['ADMIN'] },
 ]
 
 export default function Sidebar({ role }: { role: Role }) {
   const pathname = usePathname()
+  const m = useMessages()
   const items = NAV.filter((i) => i.roles.includes(role))
   const adminItems = ADMIN_NAV.filter((i) => i.roles.includes(role))
 
   return (
-    <aside className="w-64 flex-shrink-0 h-screen sticky top-0 flex flex-col bg-white border-r border-secondary-100">
+    <aside className="w-64 flex-shrink-0 h-screen sticky top-0 flex flex-col bg-white border-e border-secondary-100">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-secondary-100">
         <div className="flex items-center gap-3">
@@ -67,17 +72,17 @@ export default function Sidebar({ role }: { role: Role }) {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
         <p className="px-3 mb-2 text-[10px] font-semibold text-secondary-400 uppercase tracking-widest">
-          Main
+          {m.nav.main}
         </p>
-        <SidebarSection items={items} pathname={pathname} />
+        <SidebarSection items={items} pathname={pathname} m={m} />
 
         {adminItems.length > 0 && (
           <>
             <div className="my-4 border-t border-secondary-100" />
             <p className="px-3 mb-2 text-[10px] font-semibold text-secondary-400 uppercase tracking-widest">
-              Administration
+              {m.nav.admin}
             </p>
-            <SidebarSection items={adminItems} pathname={pathname} />
+            <SidebarSection items={adminItems} pathname={pathname} m={m} />
           </>
         )}
       </nav>
@@ -89,8 +94,8 @@ export default function Sidebar({ role }: { role: Role }) {
             {roleInitial(role)}
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-semibold text-secondary-700 truncate">{roleLabel(role)}</div>
-            <div className="text-[10px] text-secondary-400">Active session</div>
+            <div className="text-xs font-semibold text-secondary-700 truncate">{roleLabel(role, m)}</div>
+            <div className="text-[10px] text-secondary-400">{m.nav.activeSession}</div>
           </div>
         </div>
       </div>
@@ -98,7 +103,15 @@ export default function Sidebar({ role }: { role: Role }) {
   )
 }
 
-function SidebarSection({ items, pathname }: { items: NavItem[]; pathname: string }) {
+function SidebarSection({
+  items,
+  pathname,
+  m,
+}: {
+  items: NavItem[]
+  pathname: string
+  m: Messages
+}) {
   return (
     <ul className="space-y-0.5">
       {items.map((item) => {
@@ -114,14 +127,16 @@ function SidebarSection({ items, pathname }: { items: NavItem[]; pathname: strin
                   : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900',
               )}
             >
-              <span className={cn(
-                'text-base flex-shrink-0 transition-transform duration-150',
-                active ? 'text-white' : 'text-secondary-400 group-hover:text-secondary-600',
-              )}>
+              <span
+                className={cn(
+                  'text-base flex-shrink-0 transition-transform duration-150',
+                  active ? 'text-white' : 'text-secondary-400 group-hover:text-secondary-600',
+                )}
+              >
                 {item.icon}
               </span>
-              <span className="flex-1">{item.label}</span>
-              {active && <FiChevronRight className="text-white/70 text-xs" />}
+              <span className="flex-1">{m.nav[item.navKey]}</span>
+              {active && <FiChevronRight className="text-white/70 text-xs rtl:rotate-180" />}
             </Link>
           </li>
         )
@@ -130,11 +145,11 @@ function SidebarSection({ items, pathname }: { items: NavItem[]; pathname: strin
   )
 }
 
-function roleLabel(role: Role) {
+function roleLabel(role: Role, m: Messages) {
   switch (role) {
-    case 'STAFF': return 'Staff Member'
-    case 'MANAGER': return 'Procurement Manager'
-    case 'ADMIN': return 'System Admin'
+    case 'STAFF': return m.nav.staffMember
+    case 'MANAGER': return m.nav.procurementManager
+    case 'ADMIN': return m.nav.systemAdmin
   }
 }
 

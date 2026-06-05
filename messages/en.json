@@ -1,0 +1,61 @@
+{
+  "common": {
+    "save": "Save", "cancel": "Cancel", "loading": "Loading…",
+    "viewAll": "View all", "back": "Back", "signOut": "Sign out"
+  },
+  "nav": {
+    "main": "Main", "admin": "Administration", "procurement": "Procurement",
+    "dashboard": "Dashboard", "catalog": "Catalog", "myCart": "My Cart",
+    "approvals": "Approvals", "orders": "Orders", "subscriptions": "Subscriptions",
+    "overview": "Overview", "organizations": "Organizations", "products": "Products",
+    "allOrders": "All Orders", "users": "Users",
+    "staffMember": "Staff Member", "procurementManager": "Procurement Manager",
+    "systemAdmin": "System Admin", "activeSession": "Active session"
+  },
+  "home": {
+    "heroBadge": "Built exclusively for NGOs & non-profits",
+    "heroTitle": "Everything your NGO needs,",
+    "heroHighlight": "ordered in minutes.",
+    "heroDesc": "A structured procurement platform for NGOs — verified discounts, multi-level approval workflows, tiered pricing, and automated invoices all in one place.",
+    "ctaRegister": "Register your NGO", "ctaSignIn": "Sign in to your account",
+    "getStarted": "Get started",
+    "featuresTitle": "Purpose-built for procurement teams",
+    "featuresDesc": "Everything from catalog to invoice, designed around how NGOs actually buy.",
+    "f1Title": "Exclusive NGO Pricing",
+    "f1Desc": "Verified NGOs unlock special discounts stacked on top of volume-tiered pricing.",
+    "f2Title": "Approval Workflow",
+    "f2Desc": "Staff submits, Procurement Manager approves — full audit trail on every order.",
+    "f3Title": "PDF Tax Invoices",
+    "f3Desc": "Automated tax invoices generated at checkout, ready to download instantly.",
+    "f4Title": "Recurring Orders",
+    "f4Desc": "Set weekly or monthly subscriptions for coffee, toner, and other essentials.",
+    "categoriesTitle": "Product categories",
+    "categoriesDesc": "100+ SKUs across 5 categories",
+    "catBeverages": "Beverages", "catBeveragesDesc": "Coffee, tea & water",
+    "catPrinting": "Printing", "catPrintingDesc": "Toner, ink & paper",
+    "catOffice": "Office Supplies", "catOfficeDesc": "Stationery & USB",
+    "catCleaning": "Cleaning", "catCleaningDesc": "Sanitizer & wipes",
+    "bannerTitle": "Ready to streamline your procurement?",
+    "bannerDesc": "Join NGOs using Zawed to cut procurement time and unlock verified discounts.",
+    "bannerCta": "Register free", "footerTag": "Built for NGOs & non-profits."
+  },
+  "auth": {
+    "loginTitle": "Welcome back", "loginDesc": "Sign in to your Zawed account.",
+    "emailLabel": "Work email", "passwordLabel": "Password",
+    "signingIn": "Signing in…", "signInBtn": "Sign in",
+    "newToZawed": "New to Zawed?", "createCompany": "Create a company",
+    "invalidCreds": "Invalid credentials", "networkError": "Network error"
+  },
+  "dashboard": {
+    "greet": "Good day", "verifiedNgo": "Verified NGO", "newOrder": "New order",
+    "totalOrders": "Total Orders", "totalSpend": "Total Spend",
+    "pendingApprovals": "Pending Approvals", "organization": "Organization",
+    "recentOrders": "Recent Orders", "viewAll": "View all",
+    "noOrdersYet": "No orders yet", "browseCatalog": "Browse catalog",
+    "quickActions": "Quick Actions",
+    "browseCatalogBtn": "Browse Catalog", "viewCartBtn": "View My Cart",
+    "reorderBtn": "Reorder Previous", "reviewApprovalsBtn": "Review Approvals",
+    "adminDashboardBtn": "Admin Dashboard",
+    "staff": "Staff", "manager": "Procurement Manager", "sysAdmin": "System Admin"
+  }
+}

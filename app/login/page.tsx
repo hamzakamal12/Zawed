@@ -5,11 +5,14 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Input, { Label } from '@/components/ui/Input'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { useMessages } from '@/components/LocaleProvider'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') || '/dashboard'
+  const m = useMessages()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -27,14 +30,14 @@ function LoginForm() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError(data.error || 'Invalid credentials')
+        setError(data.error || m.auth.invalidCreds)
         setLoading(false)
         return
       }
       router.push(next)
       router.refresh()
     } catch {
-      setError('Network error')
+      setError(m.auth.networkError)
       setLoading(false)
     }
   }
@@ -42,7 +45,7 @@ function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <div>
-        <Label htmlFor="email">Work email</Label>
+        <Label htmlFor="email">{m.auth.emailLabel}</Label>
         <Input
           id="email"
           type="email"
@@ -54,7 +57,7 @@ function LoginForm() {
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{m.auth.passwordLabel}</Label>
         <Input
           id="password"
           type="password"
@@ -73,36 +76,38 @@ function LoginForm() {
       )}
 
       <Button type="submit" disabled={loading} className="w-full" size="lg">
-        {loading ? 'Signing in…' : 'Sign in'}
+        {loading ? m.auth.signingIn : m.auth.signInBtn}
       </Button>
     </form>
   )
 }
 
 export default function LoginPage() {
+  const m = useMessages()
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-b from-white to-secondary-50">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-between items-center mb-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-md bg-primary-600 text-white flex items-center justify-center font-bold">
               Z
             </div>
             <span className="font-bold text-xl">Zawed</span>
           </Link>
+          <LanguageSwitcher />
         </div>
         <div className="bg-white rounded-lg border border-secondary-200 shadow-sm p-8">
-          <h1 className="text-2xl font-bold text-secondary-900">Welcome back</h1>
-          <p className="text-sm text-secondary-500 mt-1">Sign in to your Zawed account.</p>
+          <h1 className="text-2xl font-bold text-secondary-900">{m.auth.loginTitle}</h1>
+          <p className="text-sm text-secondary-500 mt-1">{m.auth.loginDesc}</p>
 
           <Suspense fallback={<div className="mt-6 h-44" />}>
             <LoginForm />
           </Suspense>
 
           <p className="mt-6 text-sm text-secondary-600 text-center">
-            New to Zawed?{' '}
+            {m.auth.newToZawed}{' '}
             <Link href="/register" className="text-primary-600 font-medium hover:underline">
-              Create a company
+              {m.auth.createCompany}
             </Link>
           </p>
         </div>
