@@ -1,112 +1,212 @@
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
+import {
+  FiPackage,
+  FiCheckSquare,
+  FiFileText,
+  FiRepeat,
+  FiArrowRight,
+  FiDroplet,
+  FiPrinter,
+  FiEdit3,
+  FiShield,
+} from 'react-icons/fi'
+
+const FEATURES = [
+  {
+    icon: <FiShield className="w-5 h-5" />,
+    title: 'Exclusive NGO Pricing',
+    desc: 'Verified NGOs unlock special discounts stacked on top of volume-tiered pricing.',
+    color: 'bg-blue-100 text-blue-600',
+  },
+  {
+    icon: <FiCheckSquare className="w-5 h-5" />,
+    title: 'Approval Workflow',
+    desc: 'Staff submits, Procurement Manager approves — full audit trail on every order.',
+    color: 'bg-emerald-100 text-emerald-600',
+  },
+  {
+    icon: <FiFileText className="w-5 h-5" />,
+    title: 'PDF Tax Invoices',
+    desc: 'Automated tax invoices generated at checkout, ready to download instantly.',
+    color: 'bg-violet-100 text-violet-600',
+  },
+  {
+    icon: <FiRepeat className="w-5 h-5" />,
+    title: 'Recurring Orders',
+    desc: 'Set weekly or monthly subscriptions for coffee, toner, and other essentials.',
+    color: 'bg-amber-100 text-amber-600',
+  },
+]
+
+const CATEGORIES = [
+  {
+    icon: <FiDroplet className="w-6 h-6" />,
+    label: 'Beverages',
+    desc: 'Coffee, tea & water',
+    color: 'bg-sky-100 text-sky-600',
+  },
+  {
+    icon: <FiPrinter className="w-6 h-6" />,
+    label: 'Printing',
+    desc: 'Toner, ink & paper',
+    color: 'bg-indigo-100 text-indigo-600',
+  },
+  {
+    icon: <FiEdit3 className="w-6 h-6" />,
+    label: 'Office Supplies',
+    desc: 'Stationery & USB',
+    color: 'bg-rose-100 text-rose-600',
+  },
+  {
+    icon: <FiPackage className="w-6 h-6" />,
+    label: 'Cleaning',
+    desc: 'Sanitizer & wipes',
+    color: 'bg-emerald-100 text-emerald-600',
+  },
+]
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-secondary-50">
-      <header className="border-b border-secondary-200 bg-white">
+    <div className="min-h-screen flex flex-col bg-secondary-50">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-secondary-100 bg-white/90 backdrop-blur-sm">
         <div className="container-wide flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-primary-600 text-white flex items-center justify-center font-bold">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-brand-blue text-white flex items-center justify-center font-extrabold shadow-sm">
               Z
             </div>
-            <span className="font-bold text-lg">Zawed</span>
+            <div>
+              <span className="font-extrabold text-secondary-900 tracking-tight">Zawed</span>
+              <span className="ml-1.5 text-xs text-secondary-400 font-medium hidden sm:inline">Procurement</span>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
+              <Button variant="ghost" size="sm">Sign in</Button>
             </Link>
             <Link href="/register">
-              <Button size="sm">Register your NGO</Button>
+              <Button size="sm">Get started</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="container-wide py-16 lg:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-semibold tracking-wide uppercase">
-              NGO Procurement Platform
-            </span>
-            <h1 className="mt-4 text-4xl lg:text-5xl font-bold text-secondary-900 leading-tight">
-              Everything your NGO needs, ordered in minutes.
-            </h1>
-            <p className="mt-6 text-lg text-secondary-600 leading-relaxed">
-              Zawed gives NGOs and non-profits a structured catalog for office essentials —
-              coffee, tea, water, toner, ink, and more — with special NGO pricing, a built-in
-              approval workflow, and automated tax invoices.
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="bg-hero-gradient text-white">
+          <div className="container-wide py-20 lg:py-28">
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-white/90 mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Built exclusively for NGOs & non-profits
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-balance">
+                Everything your NGO needs,{' '}
+                <span className="text-sky-300">ordered in minutes.</span>
+              </h1>
+              <p className="mt-6 text-lg text-white/70 leading-relaxed max-w-2xl mx-auto">
+                A structured procurement platform for NGOs — verified discounts, multi-level
+                approval workflows, tiered pricing, and automated invoices all in one place.
+              </p>
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+                <Link href="/register">
+                  <Button size="lg" className="bg-white text-primary-700 hover:bg-white/90 shadow-lg hover:shadow-xl from-white to-white">
+                    Register your NGO <FiArrowRight />
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="lg" variant="ghost" className="text-white hover:bg-white/10">
+                    Sign in to your account
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+          {/* Wave divider */}
+          <div className="h-12 bg-secondary-50" style={{ clipPath: 'ellipse(110% 100% at 50% 100%)' }} />
+        </section>
+
+        {/* Features */}
+        <section className="container-wide py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-secondary-900 tracking-tight">
+              Purpose-built for procurement teams
+            </h2>
+            <p className="mt-3 text-secondary-500 max-w-xl mx-auto">
+              Everything from catalog to invoice, designed around how NGOs actually buy.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="group p-6 rounded-2xl bg-white border border-secondary-100 shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <div className={`w-10 h-10 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
+                  {f.icon}
+                </div>
+                <h3 className="font-semibold text-secondary-900 text-sm">{f.title}</h3>
+                <p className="mt-1.5 text-sm text-secondary-500 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Categories */}
+        <section className="bg-white border-y border-secondary-100 py-16">
+          <div className="container-wide">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-extrabold text-secondary-900 tracking-tight">
+                Product categories
+              </h2>
+              <p className="mt-2 text-secondary-500 text-sm">100+ SKUs across 5 categories</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {CATEGORIES.map((cat) => (
+                <Link key={cat.label} href="/login">
+                  <div className="group text-center p-6 rounded-2xl border border-secondary-100 hover:border-primary-200 hover:bg-primary-50 transition-all duration-200 cursor-pointer">
+                    <div className={`w-12 h-12 rounded-2xl ${cat.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200`}>
+                      {cat.icon}
+                    </div>
+                    <div className="font-semibold text-secondary-900 text-sm">{cat.label}</div>
+                    <div className="text-xs text-secondary-500 mt-1">{cat.desc}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Banner */}
+        <section className="container-wide py-16">
+          <div className="bg-hero-gradient rounded-2xl p-10 text-center text-white">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Ready to streamline your procurement?
+            </h2>
+            <p className="mt-3 text-white/70 max-w-md mx-auto">
+              Join NGOs using Zawed to cut procurement time and unlock verified discounts.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/register">
-                <Button size="lg">Register your NGO</Button>
-              </Link>
-              <Link href="/login">
-                <Button variant="outline" size="lg">
-                  I already have an account
+                <Button size="lg" className="bg-white text-primary-700 hover:bg-white/90 shadow-lg from-white to-white">
+                  Register free <FiArrowRight />
                 </Button>
               </Link>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              {
-                title: 'Special NGO Pricing',
-                desc: 'Verified NGOs unlock exclusive discounts on top of volume tiered pricing.',
-              },
-              {
-                title: 'Approval Workflow',
-                desc: 'Staff submits, Procurement Manager approves — full audit trail.',
-              },
-              {
-                title: 'Cash on Delivery',
-                desc: 'Simple checkout with automated PDF tax invoices.',
-              },
-              {
-                title: 'Recurring Orders',
-                desc: 'Set weekly or monthly subscriptions for essentials like coffee and toner.',
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="p-5 rounded-lg border border-secondary-200 bg-white shadow-sm"
-              >
-                <div className="text-primary-600 font-semibold text-sm">{f.title}</div>
-                <p className="mt-2 text-sm text-secondary-600">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Product categories showcase */}
-        <div className="mt-20">
-          <h2 className="text-2xl font-bold text-secondary-900 text-center mb-10">
-            Everything your organization needs
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { emoji: '☕', label: 'Beverages', desc: 'Coffee, tea, water & juice' },
-              { emoji: '🖨️', label: 'Printing', desc: 'Toner, ink & paper' },
-              { emoji: '✏️', label: 'Office Supplies', desc: 'Stationery & equipment' },
-              { emoji: '🧴', label: 'Cleaning', desc: 'Sanitizer, wipes & soap' },
-            ].map((cat) => (
-              <div
-                key={cat.label}
-                className="text-center p-6 rounded-xl border border-secondary-200 bg-white hover:shadow-md transition-shadow"
-              >
-                <div className="text-4xl mb-3">{cat.emoji}</div>
-                <div className="font-semibold text-secondary-900">{cat.label}</div>
-                <div className="text-sm text-secondary-500 mt-1">{cat.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        </section>
       </main>
 
-      <footer className="border-t border-secondary-200 bg-white py-8 text-center text-sm text-secondary-500">
-        &copy; {new Date().getFullYear()} Zawed — Built for NGOs &amp; non-profits.
+      <footer className="border-t border-secondary-100 bg-white py-8">
+        <div className="container-wide flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-secondary-400">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary-600 to-brand-blue text-white flex items-center justify-center font-bold text-xs">Z</div>
+            <span className="font-semibold text-secondary-600">Zawed</span>
+          </div>
+          <span>&copy; {new Date().getFullYear()} Zawed — Built for NGOs &amp; non-profits.</span>
+        </div>
       </footer>
     </div>
   )

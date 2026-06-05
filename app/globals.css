@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,8 +7,18 @@
 @layer base {
   html,
   body {
-    @apply bg-secondary-50 text-secondary-900;
+    @apply bg-secondary-50 text-secondary-900 antialiased;
   }
+
+  * {
+    @apply border-secondary-200;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-secondary-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-secondary-400; }
 }
 
 @layer components {
@@ -14,6 +26,40 @@
     @apply max-w-3xl mx-auto px-4;
   }
   .container-wide {
-    @apply max-w-7xl mx-auto px-4 sm:px-6;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+
+  /* Gradient text utility */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-brand-blue;
+  }
+
+  /* Glass card */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/60 shadow-card;
+  }
+
+  /* Page header */
+  .page-header {
+    @apply mb-8;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-secondary-900 tracking-tight;
+  }
+  .page-subtitle {
+    @apply text-sm text-secondary-500 mt-1;
+  }
+
+  /* Stat accent bar */
+  .stat-card-accent {
+    @apply absolute top-0 left-0 right-0 h-1 rounded-t-xl;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
 }

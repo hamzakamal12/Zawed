@@ -5,7 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Button from '@/components/ui/Button'
-import { FiArrowRight, FiPlus } from 'react-icons/fi'
+import {
+  FiArrowRight,
+  FiPlus,
+  FiShoppingBag,
+  FiDollarSign,
+  FiClock,
+  FiPackage,
+  FiShoppingCart,
+  FiRepeat,
+  FiCheckSquare,
+  FiSettings,
+} from 'react-icons/fi'
 
 export default async function DashboardPage() {
   const session = await requireSession()
@@ -29,47 +40,135 @@ export default async function DashboardPage() {
   ])
 
   const totalSpend = stats._sum.totalAmount ? Number(stats._sum.totalAmount) : 0
+  const firstName = session.name.split(' ')[0]
+
+  const STATS = [
+    {
+      label: 'Total Orders',
+      value: String(stats._count),
+      icon: <FiShoppingBag className="w-5 h-5" />,
+      bg: 'bg-stat-blue',
+      iconColor: 'text-blue-600 bg-blue-100',
+      accent: 'bg-gradient-to-r from-blue-400 to-blue-600',
+    },
+    {
+      label: 'Total Spend',
+      value: formatCurrency(totalSpend),
+      icon: <FiDollarSign className="w-5 h-5" />,
+      bg: 'bg-stat-green',
+      iconColor: 'text-emerald-600 bg-emerald-100',
+      accent: 'bg-gradient-to-r from-emerald-400 to-emerald-600',
+    },
+    {
+      label: 'Pending Approvals',
+      value: String(pendingApprovals),
+      icon: <FiClock className="w-5 h-5" />,
+      bg: 'bg-stat-amber',
+      iconColor: 'text-amber-600 bg-amber-100',
+      accent: 'bg-gradient-to-r from-amber-400 to-amber-600',
+    },
+    {
+      label: 'Organization',
+      value: company?.name ?? '—',
+      icon: <FiPackage className="w-5 h-5" />,
+      bg: 'bg-stat-purple',
+      iconColor: 'text-violet-600 bg-violet-100',
+      accent: 'bg-gradient-to-r from-violet-400 to-violet-600',
+      small: true,
+    },
+  ]
+
+  const QUICK_ACTIONS = [
+    { href: '/products', label: 'Browse Catalog', icon: <FiShoppingCart className="w-4 h-4" />, show: true },
+    { href: '/cart', label: 'View My Cart', icon: <FiPackage className="w-4 h-4" />, show: true },
+    { href: '/orders', label: 'Reorder Previous', icon: <FiRepeat className="w-4 h-4" />, show: true },
+    {
+      href: '/approvals',
+      label: `Review Approvals${pendingApprovals > 0 ? ` (${pendingApprovals})` : ''}`,
+      icon: <FiCheckSquare className="w-4 h-4" />,
+      show: session.role === 'MANAGER' || session.role === 'ADMIN',
+      highlight: pendingApprovals > 0,
+    },
+    {
+      href: '/admin',
+      label: 'Admin Dashboard',
+      icon: <FiSettings className="w-4 h-4" />,
+      show: session.role === 'ADMIN',
+    },
+  ].filter((a) => a.show)
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-secondary-900">
-          Welcome back, {session.name.split(' ')[0]}
-        </h1>
-        <p className="text-secondary-500 mt-1">
-          {company?.name ?? 'Your company'} — {roleLabel(session.role)}
-        </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Page header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-secondary-900 tracking-tight">
+            Good day, {firstName} 👋
+          </h1>
+          <p className="text-secondary-500 mt-1 text-sm">
+            {company?.name ?? 'Your organisation'} &middot; {roleLabel(session.role)}
+            {company?.verified && (
+              <span className="ml-2 inline-flex items-center gap-1 text-emerald-600 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Verified NGO
+              </span>
+            )}
+          </p>
+        </div>
+        <Link href="/products">
+          <Button size="sm">
+            <FiPlus /> New order
+          </Button>
+        </Link>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Orders placed" value={String(stats._count)} />
-        <StatCard label="Total spend" value={formatCurrency(totalSpend)} />
-        <StatCard label="Pending approvals" value={String(pendingApprovals)} />
-        <StatCard
-          label="Company code"
-          value={company?.id ?? '—'}
-          hint="Share to invite teammates"
-          small
-        />
+        {STATS.map((s) => (
+          <div key={s.label} className={`relative rounded-2xl ${s.bg} border border-secondary-100 p-5 overflow-hidden`}>
+            <div className={`stat-card-accent ${s.accent}`} />
+            <div className="flex items-start justify-between mt-1">
+              <div>
+                <div className="text-xs font-semibold text-secondary-500 uppercase tracking-wide">
+                  {s.label}
+                </div>
+                <div className={s.small
+                  ? 'text-sm font-semibold text-secondary-800 mt-1.5 leading-snug'
+                  : 'text-2xl font-extrabold text-secondary-900 mt-1.5 tabular-nums'
+                }>
+                  {s.value}
+                </div>
+              </div>
+              <div className={`w-10 h-10 rounded-xl ${s.iconColor} flex items-center justify-center flex-shrink-0`}>
+                {s.icon}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
+      {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent orders */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Recent orders</CardTitle>
+              <CardTitle>Recent Orders</CardTitle>
               <Link
                 href="/orders"
-                className="text-sm text-primary-600 hover:underline inline-flex items-center gap-1"
+                className="text-xs font-medium text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 transition-colors"
               >
-                View all <FiArrowRight />
+                View all <FiArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </CardHeader>
           <CardContent>
             {recentOrders.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-secondary-500 mb-4">No orders yet.</p>
+                <div className="w-14 h-14 rounded-2xl bg-secondary-100 flex items-center justify-center mx-auto mb-4">
+                  <FiShoppingBag className="w-6 h-6 text-secondary-400" />
+                </div>
+                <p className="text-secondary-500 text-sm font-medium mb-4">No orders yet</p>
                 <Link href="/products">
                   <Button size="sm">
                     <FiPlus /> Browse catalog
@@ -77,22 +176,22 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <ul className="divide-y divide-secondary-100">
+              <ul className="divide-y divide-secondary-50">
                 {recentOrders.map((order) => (
-                  <li key={order.id} className="py-3 flex items-center justify-between gap-4">
-                    <div>
+                  <li key={order.id} className="py-3.5 flex items-center justify-between gap-4 group">
+                    <div className="min-w-0">
                       <Link
                         href={`/orders/${order.id}`}
-                        className="font-medium text-secondary-900 hover:text-primary-600"
+                        className="font-semibold text-secondary-900 hover:text-primary-600 transition-colors text-sm"
                       >
                         {order.orderNumber}
                       </Link>
-                      <div className="text-xs text-secondary-500 mt-0.5">
-                        {formatDate(order.createdAt)} · by {order.placedBy.name}
+                      <div className="text-xs text-secondary-400 mt-0.5">
+                        {formatDate(order.createdAt)} &middot; {order.placedBy.name}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium tabular-nums">
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="text-sm font-semibold tabular-nums text-secondary-900">
                         {formatCurrency(Number(order.totalAmount))}
                       </span>
                       <OrderStatusBadge status={order.status} />
@@ -104,40 +203,27 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Quick actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick actions</CardTitle>
+            <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Link href="/products" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                Browse catalog
-              </Button>
-            </Link>
-            <Link href="/cart" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                View my cart
-              </Button>
-            </Link>
-            <Link href="/orders" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                Reorder previous
-              </Button>
-            </Link>
-            {(session.role === 'MANAGER' || session.role === 'ADMIN') && (
-              <Link href="/approvals" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  Review approvals ({pendingApprovals})
-                </Button>
+            {QUICK_ACTIONS.map((action) => (
+              <Link key={action.href} href={action.href} className="block">
+                <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer ${
+                  action.highlight
+                    ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'
+                    : 'border border-secondary-100 bg-white text-secondary-700 hover:bg-secondary-50 hover:border-secondary-200 hover:text-secondary-900'
+                }`}>
+                  <span className={`flex-shrink-0 ${action.highlight ? 'text-amber-600' : 'text-secondary-400'}`}>
+                    {action.icon}
+                  </span>
+                  {action.label}
+                  <FiArrowRight className="ml-auto w-3.5 h-3.5 opacity-40" />
+                </button>
               </Link>
-            )}
-            {session.role === 'ADMIN' && (
-              <Link href="/admin" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  Admin dashboard
-                </Button>
-              </Link>
-            )}
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -145,40 +231,10 @@ export default async function DashboardPage() {
   )
 }
 
-function StatCard({
-  label,
-  value,
-  hint,
-  small,
-}: {
-  label: string
-  value: string
-  hint?: string
-  small?: boolean
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-xs font-medium text-secondary-500 uppercase tracking-wide">{label}</div>
-        <div
-          className={
-            small
-              ? 'text-xs font-mono mt-1 text-secondary-900 break-all'
-              : 'text-2xl font-bold text-secondary-900 mt-1'
-          }
-        >
-          {value}
-        </div>
-        {hint && <div className="text-xs text-secondary-400 mt-1">{hint}</div>}
-      </CardContent>
-    </Card>
-  )
-}
-
 function OrderStatusBadge({ status }: { status: string }) {
   if (status === 'PAID') return <Badge variant="success">Paid</Badge>
   if (status === 'CANCELLED') return <Badge variant="danger">Cancelled</Badge>
-  return <Badge variant="warning">Pending payment</Badge>
+  return <Badge variant="warning">Pending</Badge>
 }
 
 function roleLabel(role: string) {
