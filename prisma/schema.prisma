@@ -52,6 +52,7 @@ model Company {
   taxId              String?
   phone              String?
   email              String?
+  procurementEmail   String?
   // NGO-specific fields
   ngoType            NgoType?
   registrationNumber String?

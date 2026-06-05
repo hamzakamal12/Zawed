@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { getSession } from '@/lib/session'
 import { computeCart } from '@/lib/cart'
 import { generateOrderNumber } from '@/lib/utils'
+import { sendProformaInvoice } from '@/lib/email'
 
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   const session = await getSession()
@@ -92,6 +93,41 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
 
     return created
   })
+
+  // Send proforma invoice email to procurement manager if configured.
+  if (company?.procurementEmail) {
+    const orderWithItems = await prisma.order.findUnique({
+      where: { id: order.id },
+      include: { items: true, placedBy: true },
+    })
+    if (orderWithItems) {
+      sendProformaInvoice(company.procurementEmail, {
+        orderNumber: orderWithItems.orderNumber,
+        createdAt: orderWithItems.createdAt,
+        status: orderWithItems.status,
+        paymentMethod: orderWithItems.paymentMethod,
+        company: {
+          name: company.name,
+          address: company.address,
+          taxId: company.taxId,
+          email: company.email,
+          phone: company.phone,
+        },
+        placedBy: { name: orderWithItems.placedBy.name, email: orderWithItems.placedBy.email },
+        items: orderWithItems.items.map((i) => ({
+          productName: i.productName,
+          productSku: i.productSku,
+          quantity: i.quantity,
+          unitPrice: Number(i.unitPrice),
+          taxRate: Number(i.taxRate),
+          subtotal: Number(i.subtotal),
+        })),
+        subtotal: Number(orderWithItems.subtotal),
+        taxAmount: Number(orderWithItems.taxAmount),
+        totalAmount: Number(orderWithItems.totalAmount),
+      }).catch(() => {})
+    }
+  }
 
   return NextResponse.json({ ok: true, orderId: order.id, orderNumber: order.orderNumber })
 }

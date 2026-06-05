@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const [taxId, setTaxId] = useState('')
   const [ngoType, setNgoType] = useState('OTHER')
   const [registrationNumber, setRegistrationNumber] = useState('')
+  const [procurementEmail, setProcurementEmail] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -45,6 +46,7 @@ export default function RegisterPage() {
             taxId,
             ngoType,
             registrationNumber,
+            procurementEmail: procurementEmail || undefined,
             name,
             email,
             password,
@@ -165,6 +167,22 @@ export default function RegisterPage() {
                       placeholder="TAX-12345"
                     />
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="procurementEmail">
+                    Procurement / Logistics Manager Email{' '}
+                    <span className="text-secondary-400 font-normal">(optional) — إيميل مدير المشتريات</span>
+                  </Label>
+                  <Input
+                    id="procurementEmail"
+                    type="email"
+                    value={procurementEmail}
+                    onChange={(e) => setProcurementEmail(e.target.value)}
+                    placeholder="procurement@example.org"
+                  />
+                  <p className="text-xs text-secondary-400 mt-1">
+                    Proforma invoices will be emailed to this address automatically on each order.
+                  </p>
                 </div>
                 <p className="text-xs text-secondary-500">
                   You will be set up as the organization&apos;s first{' '}

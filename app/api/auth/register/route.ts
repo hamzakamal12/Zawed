@@ -14,6 +14,7 @@ const newCompany = z.object({
   taxId: z.string().optional().nullable(),
   ngoType: z.enum(NGO_TYPES).optional().nullable(),
   registrationNumber: z.string().optional().nullable(),
+  procurementEmail: z.string().email().optional().nullable(),
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
           taxId: data.taxId || null,
           ngoType: data.ngoType || null,
           registrationNumber: data.registrationNumber || null,
+          procurementEmail: data.procurementEmail || null,
           email,
         },
       })
