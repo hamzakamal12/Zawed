@@ -33,7 +33,7 @@ const PAGE_WIDTH = 595.28
 const PAGE_HEIGHT = 841.89
 const MARGIN = 50
 
-export async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
+export async function generateInvoicePdf(data: InvoiceData, proforma = false): Promise<Uint8Array> {
   const pdf = await PDFDocument.create()
   const page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT])
   const font = await pdf.embedFont(StandardFonts.Helvetica)
@@ -49,12 +49,14 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array>
     font: bold,
     color: rgb(0.15, 0.3, 0.85),
   })
-  page.drawText('TAX INVOICE', {
-    x: PAGE_WIDTH - MARGIN - 130,
+  const titleText = proforma ? 'PROFORMA INVOICE' : 'TAX INVOICE'
+  const titleColor = proforma ? rgb(0.6, 0.35, 0.05) : rgb(0.12, 0.16, 0.24)
+  page.drawText(titleText, {
+    x: PAGE_WIDTH - MARGIN - (proforma ? 160 : 130),
     y,
     size: 20,
     font: bold,
-    color: rgb(0.12, 0.16, 0.24),
+    color: titleColor,
   })
 
   y -= 20
@@ -171,11 +173,27 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array>
   y -= 22
   drawTotalRow(page, bold, bold, 'Total Due', money(data.totalAmount), y, true)
 
+  // Proforma notice banner
+  if (proforma) {
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - 30,
+      width: PAGE_WIDTH - 2 * MARGIN,
+      height: 22,
+      color: rgb(1.0, 0.97, 0.88),
+    })
+    page.drawText(
+      'PROFORMA INVOICE — This is an estimate only. Payment is not due until a confirmed tax invoice is issued.',
+      { x: MARGIN + 8, y: y - 20, size: 8, font, color: rgb(0.55, 0.35, 0.0) },
+    )
+    y -= 40
+  }
+
   // Footer note.
-  page.drawText(
-    'Payment Terms: Cash on Delivery. Please have exact change ready upon receipt of goods.',
-    { x: MARGIN, y: 60, size: 9, font, color: rgb(0.4, 0.45, 0.55) },
-  )
+  const footerNote = proforma
+    ? 'This proforma invoice is valid for 7 days. Prices subject to change before final invoice.'
+    : 'Payment Terms: Cash on Delivery. Please have exact change ready upon receipt of goods.'
+  page.drawText(footerNote, { x: MARGIN, y: 60, size: 9, font, color: rgb(0.4, 0.45, 0.55) })
   page.drawText('Thank you for your business with Zawed.', {
     x: MARGIN,
     y: 45,

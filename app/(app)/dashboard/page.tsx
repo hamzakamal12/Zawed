@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/session'
-import { getMessages, type Messages } from '@/lib/i18n'
+import { getMessages } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -17,13 +17,20 @@ import {
   FiRepeat,
   FiCheckSquare,
   FiSettings,
+  FiTrendingUp,
+  FiFileText,
 } from 'react-icons/fi'
 
 export default async function DashboardPage() {
   const session = await requireSession()
   const m = getMessages()
 
-  const [stats, recentOrders, pendingApprovals, company] = await Promise.all([
+  const now = new Date()
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const startOf6MonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+
+  const [stats, recentOrders, pendingApprovals, company, monthlyOrders] = await Promise.all([
     prisma.order.aggregate({
       where: { companyId: session.companyId ?? '' },
       _count: true,
@@ -39,10 +46,42 @@ export default async function DashboardPage() {
       where: { companyId: session.companyId ?? '', status: 'PENDING_APPROVAL' },
     }),
     prisma.company.findUnique({ where: { id: session.companyId ?? '' } }),
+    prisma.order.findMany({
+      where: {
+        companyId: session.companyId ?? '',
+        createdAt: { gte: startOf6MonthsAgo },
+        status: { in: ['PENDING_PAYMENT', 'PAID'] },
+      },
+      select: { totalAmount: true, createdAt: true, status: true },
+      orderBy: { createdAt: 'asc' },
+    }),
   ])
 
   const totalSpend = stats._sum.totalAmount ? Number(stats._sum.totalAmount) : 0
   const firstName = session.name.split(' ')[0]
+
+  // Build monthly consumption for last 6 months
+  const monthlyMap: Record<string, { label: string; total: number; count: number }> = {}
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleDateString('ar-SA', { month: 'long', year: 'numeric' })
+    monthlyMap[key] = { label, total: 0, count: 0 }
+  }
+  for (const o of monthlyOrders) {
+    const d = o.createdAt
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    if (monthlyMap[key]) {
+      monthlyMap[key].total += Number(o.totalAmount)
+      monthlyMap[key].count++
+    }
+  }
+  const monthlyData = Object.values(monthlyMap)
+  const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const thisMonthTotal = monthlyMap[thisMonthKey]?.total ?? 0
+  const lastMonthKey = `${startOfLastMonth.getFullYear()}-${String(startOfLastMonth.getMonth() + 1).padStart(2, '0')}`
+  const lastMonthTotal = monthlyMap[lastMonthKey]?.total ?? 0
+  const maxMonthly = Math.max(...monthlyData.map(m => m.total), 1)
 
   const STATS = [
     {
@@ -62,9 +101,9 @@ export default async function DashboardPage() {
       accent: 'bg-gradient-to-r from-emerald-400 to-emerald-600',
     },
     {
-      label: m.dashboard.pendingApprovals,
-      value: String(pendingApprovals),
-      icon: <FiClock className="w-5 h-5" />,
+      label: 'هذا الشهر',
+      value: formatCurrency(thisMonthTotal),
+      icon: <FiTrendingUp className="w-5 h-5" />,
       bg: 'bg-stat-amber',
       iconColor: 'text-amber-600 bg-amber-100',
       accent: 'bg-gradient-to-r from-amber-400 to-amber-600',
@@ -108,7 +147,7 @@ export default async function DashboardPage() {
             {m.dashboard.greet}, {firstName} 👋
           </h1>
           <p className="text-secondary-500 mt-1 text-sm">
-            {company?.name ?? 'Your organisation'} &middot; {roleLabel(session.role, m)}
+            {company?.name ?? 'مؤسستك'} · {roleLabel(session.role, m)}
             {company?.verified && (
               <span className="ms-2 inline-flex items-center gap-1 text-emerald-600 font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -172,16 +211,14 @@ export default async function DashboardPage() {
                 </div>
                 <p className="text-secondary-500 text-sm font-medium mb-4">{m.dashboard.noOrdersYet}</p>
                 <Link href="/products">
-                  <Button size="sm">
-                    <FiPlus /> {m.dashboard.browseCatalog}
-                  </Button>
+                  <Button size="sm"><FiPlus /> {m.dashboard.browseCatalog}</Button>
                 </Link>
               </div>
             ) : (
               <ul className="divide-y divide-secondary-50">
                 {recentOrders.map((order) => (
-                  <li key={order.id} className="py-3.5 flex items-center justify-between gap-4 group">
-                    <div className="min-w-0">
+                  <li key={order.id} className="py-3.5 flex items-center justify-between gap-4">
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={`/orders/${order.id}`}
                         className="font-semibold text-secondary-900 hover:text-primary-600 transition-colors text-sm"
@@ -189,10 +226,16 @@ export default async function DashboardPage() {
                         {order.orderNumber}
                       </Link>
                       <div className="text-xs text-secondary-400 mt-0.5">
-                        {formatDate(order.createdAt)} &middot; {order.placedBy.name}
+                        {formatDate(order.createdAt)} · {order.placedBy.name}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {order.status === 'PENDING_PAYMENT' && (
+                        <a href={`/api/orders/${order.id}/invoice?type=proforma`} target="_blank" rel="noreferrer"
+                          className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1 font-medium">
+                          <FiFileText className="w-3 h-3" /> مبدئية
+                        </a>
+                      )}
                       <span className="text-sm font-semibold tabular-nums text-secondary-900">
                         {formatCurrency(Number(order.totalAmount))}
                       </span>
@@ -216,7 +259,7 @@ export default async function DashboardPage() {
                 <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-start cursor-pointer ${
                   action.highlight
                     ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'
-                    : 'border border-secondary-100 bg-white text-secondary-700 hover:bg-secondary-50 hover:border-secondary-200 hover:text-secondary-900'
+                    : 'border border-secondary-100 bg-white text-secondary-700 hover:bg-secondary-50 hover:border-secondary-200'
                 }`}>
                   <span className={`flex-shrink-0 ${action.highlight ? 'text-amber-600' : 'text-secondary-400'}`}>
                     {action.icon}
@@ -229,16 +272,83 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Monthly Consumption */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              <span className="flex items-center gap-2">
+                <FiTrendingUp className="text-primary-500" />
+                الاستهلاك الشهري
+              </span>
+            </CardTitle>
+            <div className="text-xs text-secondary-500">آخر 6 أشهر</div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* This month highlight */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="rounded-xl bg-primary-50 border border-primary-100 p-4">
+              <div className="text-xs text-primary-600 font-semibold mb-1">هذا الشهر</div>
+              <div className="text-2xl font-extrabold text-primary-700 tabular-nums">
+                {formatCurrency(thisMonthTotal)}
+              </div>
+            </div>
+            <div className="rounded-xl bg-secondary-50 border border-secondary-100 p-4">
+              <div className="text-xs text-secondary-500 font-semibold mb-1">الشهر الماضي</div>
+              <div className="text-2xl font-extrabold text-secondary-700 tabular-nums">
+                {formatCurrency(lastMonthTotal)}
+              </div>
+              {lastMonthTotal > 0 && thisMonthTotal > 0 && (
+                <div className={`text-xs mt-1 font-medium ${thisMonthTotal >= lastMonthTotal ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {thisMonthTotal >= lastMonthTotal ? '↑' : '↓'}{' '}
+                  {Math.abs(((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100).toFixed(0)}%
+                  {' '}{thisMonthTotal >= lastMonthTotal ? 'زيادة' : 'انخفاض'}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bar chart */}
+          <div className="space-y-3">
+            {monthlyData.map((month) => (
+              <div key={month.label} className="flex items-center gap-3">
+                <div className="w-28 text-xs text-secondary-500 text-right shrink-0">{month.label}</div>
+                <div className="flex-1 h-7 bg-secondary-100 rounded-lg overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary-500 to-brand-blue rounded-lg transition-all duration-500 flex items-center justify-end pr-2"
+                    style={{ width: month.total > 0 ? `${(month.total / maxMonthly) * 100}%` : '0%', minWidth: month.total > 0 ? '2rem' : '0' }}
+                  >
+                    {month.total > 0 && (
+                      <span className="text-white text-[10px] font-semibold">
+                        {formatCurrency(month.total)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-6 text-center">
+                  <span className="text-xs text-secondary-400">{month.count > 0 ? month.count : ''}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {monthlyData.every(m => m.total === 0) && (
+            <div className="text-center py-6 text-secondary-400 text-sm">لا توجد طلبات في الأشهر الستة الماضية</div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
 
 function OrderStatusBadge({ status }: { status: string }) {
-  if (status === 'PAID') return <Badge variant="success">Paid</Badge>
-  if (status === 'CANCELLED') return <Badge variant="danger">Cancelled</Badge>
-  return <Badge variant="warning">Pending</Badge>
+  if (status === 'PAID') return <Badge variant="success">مدفوع</Badge>
+  if (status === 'CANCELLED') return <Badge variant="danger">ملغى</Badge>
+  return <Badge variant="warning">بانتظار الدفع</Badge>
 }
 
+import type { Messages } from '@/lib/i18n'
 function roleLabel(role: string, m: Messages) {
   return role === 'STAFF' ? m.dashboard.staff : role === 'MANAGER' ? m.dashboard.manager : m.dashboard.sysAdmin
 }
