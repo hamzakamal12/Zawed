@@ -1,4 +1,8 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Avatar } from '@/components/ui/Avatar'
 import { ReputationBadge } from '@/components/user/ReputationBadge'
 import { Ticker } from '@/components/ui/Ticker'
@@ -29,13 +33,11 @@ interface PostCardProps {
       isVerified: boolean
       role: string
     }
-    community?: {
-      name: string
-      slug: string
-    } | null
+    community?: { name: string; slug: string } | null
   }
   userVote?: number | null
   compact?: boolean
+  currentUserId?: string
 }
 
 const typeLabel: Record<string, { label: string; color: string }> = {
@@ -55,13 +57,52 @@ function timeAgo(date: Date | string) {
   return `${Math.floor(hrs / 24)}ي`
 }
 
-export function PostCard({ post, userVote, compact = false }: PostCardProps) {
+function OutcomeButtons({ postId }: { postId: string }) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  async function markOutcome(outcome: boolean) {
+    if (loading) return
+    setLoading(true)
+    await fetch(`/api/posts/${postId}/outcome`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ outcome }),
+    })
+    router.refresh()
+    setLoading(false)
+  }
+
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="text-slate-500 text-xs">تحديد النتيجة:</span>
+      <button
+        onClick={() => markOutcome(true)}
+        disabled={loading}
+        className="text-xs px-2 py-0.5 rounded-md bg-bull-500/15 text-bull-400 hover:bg-bull-500/25 transition-colors disabled:opacity-50"
+      >
+        ✓ صحيح
+      </button>
+      <button
+        onClick={() => markOutcome(false)}
+        disabled={loading}
+        className="text-xs px-2 py-0.5 rounded-md bg-bear-500/15 text-bear-400 hover:bg-bear-500/25 transition-colors disabled:opacity-50"
+      >
+        ✗ خطأ
+      </button>
+    </div>
+  )
+}
+
+export function PostCard({ post, userVote, compact = false, currentUserId }: PostCardProps) {
   const type = typeLabel[post.type] ?? typeLabel.DISCUSSION
+  const isOwner = currentUserId === post.author.id
+  const isPendingPrediction =
+    post.type === 'PREDICTION' && post.predictionOutcome === null
 
   return (
     <article className="border-b border-border hover:bg-surface/40 transition-colors">
       <div className="px-4 py-4">
-        {/* Header */}
         <div className="flex items-start gap-3">
           <Link href={`/profile/${post.author.username}`}>
             <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size="md" />
@@ -97,8 +138,8 @@ export function PostCard({ post, userVote, compact = false }: PostCardProps) {
               )}
             </div>
 
-            {/* Type + ticker badges */}
-            <div className="flex items-center gap-2 mb-2">
+            {/* Type + ticker + outcome badges */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${type.color}`}>
                 {type.label}
               </span>
@@ -106,6 +147,11 @@ export function PostCard({ post, userVote, compact = false }: PostCardProps) {
               {post.type === 'PREDICTION' && post.predictionOutcome !== null && post.predictionOutcome !== undefined && (
                 <span className={post.predictionOutcome ? 'badge-bull' : 'badge-bear'}>
                   {post.predictionOutcome ? '✓ صحيح' : '✗ خطأ'}
+                </span>
+              )}
+              {isPendingPrediction && (
+                <span className="text-xs text-slate-500 bg-slate-700/30 px-1.5 py-0.5 rounded">
+                  ⏳ قيد الانتظار
                 </span>
               )}
             </div>
@@ -120,16 +166,29 @@ export function PostCard({ post, userVote, compact = false }: PostCardProps) {
             )}
 
             {/* Content */}
-            <p className={`text-slate-300 text-sm leading-relaxed ${compact ? 'line-clamp-3' : 'whitespace-pre-wrap'}`}>
+            <p
+              className={`text-slate-300 text-sm leading-relaxed ${
+                compact ? 'line-clamp-3' : 'whitespace-pre-wrap'
+              }`}
+            >
               {post.content}
             </p>
 
-            {/* Chart/Image */}
+            {/* Chart */}
             {post.chartUrl && !compact && (
               <div className="mt-3 rounded-xl overflow-hidden border border-border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={post.chartUrl} alt="Chart" className="w-full max-h-80 object-contain bg-surface-2" />
+                <img
+                  src={post.chartUrl}
+                  alt="Chart"
+                  className="w-full max-h-80 object-contain bg-surface-2"
+                />
               </div>
+            )}
+
+            {/* Owner: mark prediction outcome */}
+            {isOwner && isPendingPrediction && !compact && (
+              <OutcomeButtons postId={post.id} />
             )}
 
             {/* Actions */}

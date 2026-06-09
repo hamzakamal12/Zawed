@@ -4,6 +4,40 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { PostCard } from '@/components/feed/PostCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+import type { AssetCategory, PostType } from '@prisma/client'
+
+interface CommunityData {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  category: string
+  memberCount: number
+  postCount: number
+}
+
+interface FeedPost {
+  id: string
+  title?: string | null
+  content: string
+  imageUrl?: string | null
+  chartUrl?: string | null
+  ticker?: string | null
+  type: PostType
+  category: AssetCategory
+  upvotes: number
+  downvotes: number
+  commentCount: number
+  createdAt: string
+  predictionOutcome?: boolean | null
+  predictionDeadline?: string | null
+  userVote: number | null
+  author: {
+    id: string; name: string; username: string; avatarUrl?: string | null
+    reputationScore: number; isVerified: boolean; role: string
+  }
+  community?: { name: string; slug: string } | null
+}
 
 const categoryEmoji: Record<string, string> = {
   CRYPTO: '₿', STOCKS: '📈', REAL_ESTATE: '🏠',
@@ -12,12 +46,9 @@ const categoryEmoji: Record<string, string> = {
 
 export default function CommunityPage() {
   const { slug } = useParams<{ slug: string }>()
-  const [community, setCommunity] = useState<{
-    id: string; name: string; slug: string; description?: string | null;
-    category: string; memberCount: number; postCount: number;
-  } | null>(null)
+  const [community, setCommunity] = useState<CommunityData | null>(null)
   const [isMember, setIsMember] = useState(false)
-  const [posts, setPosts] = useState<any[]>([])
+  const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState(false)
 

@@ -1,6 +1,6 @@
 import { requireSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
-import { PostCard } from '@/components/feed/PostCard'
+import { FeedList } from '@/components/feed/FeedList'
 import { PostEditor } from '@/components/feed/PostEditor'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
@@ -10,21 +10,22 @@ export const dynamic = 'force-dynamic'
 export default async function FeedPage() {
   const session = await requireSession()
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.sub },
-    select: { name: true, avatarUrl: true, reputationScore: true },
-  })
+  const [user, follows] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.sub },
+      select: { name: true, avatarUrl: true },
+    }),
+    prisma.follow.findMany({
+      where: { followerId: session.sub },
+      select: { followingId: true },
+    }),
+  ])
 
-  // Get followed users
-  const follows = await prisma.follow.findMany({
-    where: { followerId: session.sub },
-    select: { followingId: true },
-  })
   const followingIds = follows.map((f) => f.followingId)
+  const take = 20
 
-  // Get posts: from followed + own + recent trending
   const posts = await prisma.post.findMany({
-    take: 30,
+    take: take + 1,
     orderBy: { createdAt: 'desc' },
     where:
       followingIds.length > 0
@@ -41,15 +42,26 @@ export default async function FeedPage() {
     },
   })
 
-  // Get user votes for these posts
   const votes = await prisma.vote.findMany({
     where: { userId: session.sub, postId: { in: posts.map((p) => p.id) } },
   })
   const voteMap = Object.fromEntries(votes.map((v) => [v.postId!, v.value]))
 
+  const hasMore = posts.length > take
+  const items = hasMore ? posts.slice(0, take) : posts
+  const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null
+
+  const feedPosts = items.map((p) => ({
+    ...p,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: undefined,
+    predictionDeadline: p.predictionDeadline?.toISOString() ?? null,
+    targetPrice: undefined,
+    userVote: voteMap[p.id] ?? null,
+  }))
+
   return (
     <div>
-      {/* Post editor */}
       <PostEditor user={user ?? { name: session.name, avatarUrl: null }} />
 
       {/* Category tabs */}
@@ -71,8 +83,7 @@ export default async function FeedPage() {
         ))}
       </div>
 
-      {/* Posts */}
-      {posts.length === 0 ? (
+      {feedPosts.length === 0 ? (
         <EmptyState
           icon="📊"
           title="لا توجد منشورات بعد"
@@ -84,9 +95,11 @@ export default async function FeedPage() {
           }
         />
       ) : (
-        posts.map((post) => (
-          <PostCard key={post.id} post={post} userVote={voteMap[post.id]} compact />
-        ))
+        <FeedList
+          initialPosts={feedPosts}
+          initialCursor={nextCursor}
+          currentUserId={session.sub}
+        />
       )}
     </div>
   )

@@ -6,6 +6,28 @@ import { Avatar } from '@/components/ui/Avatar'
 import { ReputationBadge } from '@/components/user/ReputationBadge'
 import { PostCard } from '@/components/feed/PostCard'
 import { EmptyState } from '@/components/ui/EmptyState'
+import type { AssetCategory, PostType } from '@prisma/client'
+
+interface ProfileUser {
+  id: string; name: string; username: string; bio?: string | null
+  avatarUrl?: string | null; role: string; reputationScore: number
+  predictionAccuracy: number; totalPredictions: number
+  correctPredictions: number; isVerified: boolean; createdAt: string
+  _count: { followers: number; following: number; posts: number }
+}
+
+interface ProfilePost {
+  id: string; title?: string | null; content: string
+  imageUrl?: string | null; chartUrl?: string | null; ticker?: string | null
+  type: PostType; category: AssetCategory; upvotes: number; downvotes: number
+  commentCount: number; createdAt: string; predictionOutcome?: boolean | null
+  predictionDeadline?: string | null; userVote: number | null
+  author: {
+    id: string; name: string; username: string; avatarUrl?: string | null
+    reputationScore: number; isVerified: boolean; role: string
+  }
+  community?: { name: string; slug: string } | null
+}
 
 const roleLabel: Record<string, string> = {
   VERIFIED_ANALYST: 'محلل موثق',
@@ -17,15 +39,9 @@ const roleLabel: Record<string, string> = {
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>()
   const [profile, setProfile] = useState<{
-    user: {
-      id: string; name: string; username: string; bio?: string | null;
-      avatarUrl?: string | null; role: string; reputationScore: number;
-      predictionAccuracy: number; totalPredictions: number;
-      correctPredictions: number; isVerified: boolean; createdAt: string;
-      _count: { followers: number; following: number; posts: number };
-    };
-    posts: any[];
-    isFollowing: boolean;
+    user: ProfileUser
+    posts: ProfilePost[]
+    isFollowing: boolean
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [following, setFollowing] = useState(false)

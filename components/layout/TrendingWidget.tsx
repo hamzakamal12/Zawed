@@ -1,30 +1,27 @@
 import Link from 'next/link'
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/db'
 
-async function getTrendingData() {
-  const [topPosts, topCommunities, topAnalysts] = await Promise.all([
-    prisma.post.findMany({
-      take: 5,
-      orderBy: [{ upvotes: 'desc' }, { createdAt: 'desc' }],
-      where: {
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-      select: { id: true, ticker: true, title: true, content: true, upvotes: true, category: true },
-    }),
-    prisma.community.findMany({
-      take: 4,
-      orderBy: { memberCount: 'desc' },
-      select: { id: true, name: true, slug: true, memberCount: true, category: true },
-    }),
-    prisma.user.findMany({
-      take: 4,
-      orderBy: { reputationScore: 'desc' },
-      where: { reputationScore: { gt: 0 } },
-      select: { id: true, name: true, username: true, reputationScore: true, isVerified: true },
-    }),
-  ])
-  return { topPosts, topCommunities, topAnalysts }
-}
+const getTrendingData = unstable_cache(
+  async () => {
+    const [topCommunities, topAnalysts] = await Promise.all([
+      prisma.community.findMany({
+        take: 4,
+        orderBy: { memberCount: 'desc' },
+        select: { id: true, name: true, slug: true, memberCount: true, category: true },
+      }),
+      prisma.user.findMany({
+        take: 4,
+        orderBy: { reputationScore: 'desc' },
+        where: { reputationScore: { gt: 0 } },
+        select: { id: true, name: true, username: true, reputationScore: true, isVerified: true },
+      }),
+    ])
+    return { topCommunities, topAnalysts }
+  },
+  ['trending-widget'],
+  { revalidate: 300 } // يُحدَّث كل 5 دقائق فقط
+)
 
 const categoryEmoji: Record<string, string> = {
   CRYPTO: '₿',
@@ -92,14 +89,15 @@ export async function TrendingWidget() {
                   </div>
                   <div className="text-slate-500 text-xs">@{u.username}</div>
                 </div>
-                <span className="text-primary-400 text-xs font-bold">★{u.reputationScore.toFixed(0)}</span>
+                <span className="text-primary-400 text-xs font-bold">
+                  ★{u.reputationScore.toFixed(0)}
+                </span>
               </Link>
             ))}
           </div>
         </div>
       )}
 
-      {/* Footer */}
       <p className="text-slate-600 text-xs px-1 mt-auto">
         © 2026 زاود — منصة التداول الاجتماعي
       </p>

@@ -6,6 +6,37 @@ import { PostCard } from '@/components/feed/PostCard'
 import { Avatar } from '@/components/ui/Avatar'
 import { ReputationBadge } from '@/components/user/ReputationBadge'
 import { EmptyState } from '@/components/ui/EmptyState'
+import type { AssetCategory, PostType } from '@prisma/client'
+
+interface PostAuthor {
+  id: string
+  name: string
+  username: string
+  avatarUrl: string | null
+  reputationScore: number
+  isVerified: boolean
+  role: string
+}
+
+interface PostData {
+  id: string
+  title: string | null
+  content: string
+  imageUrl: string | null
+  chartUrl: string | null
+  ticker: string | null
+  type: PostType
+  category: AssetCategory
+  upvotes: number
+  downvotes: number
+  commentCount: number
+  createdAt: string
+  predictionOutcome: boolean | null
+  predictionDeadline: string | null
+  author: PostAuthor
+  community: { name: string; slug: string } | null
+  userVote: number | null
+}
 
 interface Comment {
   id: string
@@ -13,8 +44,12 @@ interface Comment {
   upvotes: number
   createdAt: string
   author: {
-    id: string; name: string; username: string;
-    avatarUrl?: string | null; reputationScore: number; isVerified: boolean;
+    id: string
+    name: string
+    username: string
+    avatarUrl: string | null
+    reputationScore: number
+    isVerified: boolean
   }
   replies: Comment[]
 }
@@ -28,9 +63,12 @@ function timeAgo(date: string) {
   return `${Math.floor(hrs / 24)}ي`
 }
 
-function CommentItem({ comment, postId, onReply }: {
-  comment: Comment; postId: string;
-  onReply: (parentId: string) => void;
+function CommentItem({
+  comment,
+  onReply,
+}: {
+  comment: Comment
+  onReply: (parentId: string) => void
 }) {
   return (
     <div className="flex gap-3 py-3">
@@ -68,9 +106,10 @@ function CommentItem({ comment, postId, onReply }: {
 
 export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const [post, setPost] = useState<any>(null)
+  const [post, setPost] = useState<PostData | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -79,9 +118,15 @@ export default function PostDetailPage() {
     async function load() {
       setLoading(true)
       const [postRes, commentsRes] = await Promise.all([
-        fetch(`/api/posts?id=${id}`),
+        fetch(`/api/posts/${id}`),
         fetch(`/api/posts/${id}/comments`),
       ])
+      if (postRes.ok) {
+        const data = await postRes.json()
+        setPost(data.post)
+      } else {
+        setNotFound(true)
+      }
       if (commentsRes.ok) {
         const data = await commentsRes.json()
         setComments(data.comments)
@@ -89,14 +134,6 @@ export default function PostDetailPage() {
       setLoading(false)
     }
     load()
-    // Fetch individual post via feed API fallback
-    fetch('/api/posts').then(async (r) => {
-      if (r.ok) {
-        const data = await r.json()
-        const found = data.posts.find((p: any) => p.id === id)
-        if (found) setPost(found)
-      }
-    })
   }, [id])
 
   async function submitComment(e: React.FormEvent) {
@@ -119,6 +156,7 @@ export default function PostDetailPage() {
       } else {
         setComments((prev) => [{ ...data.comment, replies: [] }, ...prev])
       }
+      setPost((p) => p ? { ...p, commentCount: p.commentCount + 1 } : p)
       setComment('')
       setReplyTo(null)
     }
@@ -126,12 +164,20 @@ export default function PostDetailPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-24 text-slate-400 text-sm">جاري التحميل...</div>
+    return (
+      <div className="flex items-center justify-center py-24 text-slate-400 text-sm">
+        جاري التحميل...
+      </div>
+    )
+  }
+
+  if (notFound || !post) {
+    return <EmptyState icon="❌" title="المنشور غير موجود" description="ربما تم حذفه أو الرابط غير صحيح" />
   }
 
   return (
     <div>
-      {post && <PostCard post={post} userVote={post.userVote} />}
+      <PostCard post={post} userVote={post.userVote} />
 
       {/* Comment form */}
       <div className="px-4 py-4 border-b border-border">
@@ -139,7 +185,9 @@ export default function PostDetailPage() {
           {replyTo && (
             <div className="flex items-center gap-2 mb-2 text-xs text-slate-500">
               <span>رد على تعليق</span>
-              <button type="button" onClick={() => setReplyTo(null)} className="text-bear-400">✕</button>
+              <button type="button" onClick={() => setReplyTo(null)} className="text-bear-400">
+                ✕
+              </button>
             </div>
           )}
           <textarea
@@ -167,7 +215,7 @@ export default function PostDetailPage() {
           <EmptyState icon="💬" title="لا توجد تعليقات بعد" description="كن أول من يعلق" />
         ) : (
           comments.map((c) => (
-            <CommentItem key={c.id} comment={c} postId={id} onReply={(pid) => setReplyTo(pid)} />
+            <CommentItem key={c.id} comment={c} onReply={(pid) => setReplyTo(pid)} />
           ))
         )}
       </div>
