@@ -5,7 +5,7 @@
 @layer base {
   html,
   body {
-    @apply bg-secondary-50 text-secondary-900;
+    @apply bg-primary-50/40 text-secondary-900;
   }
 }
 
@@ -16,4 +16,14 @@
   .container-wide {
     @apply max-w-7xl mx-auto px-4 sm:px-6;
   }
+}
+
+/* Hide number-input spinners for a cleaner quantity stepper. */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
 }

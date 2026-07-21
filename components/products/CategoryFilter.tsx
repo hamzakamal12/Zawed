@@ -34,7 +34,7 @@ export default function CategoryFilter({ categories }: { categories: Category[] 
             : 'bg-white border border-secondary-200 text-secondary-700 hover:bg-secondary-50',
         )}
       >
-        All
+        الكل
       </Link>
       {categories.map((c) => (
         <Link

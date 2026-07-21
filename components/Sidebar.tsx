@@ -5,11 +5,9 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   FiHome,
-  FiPackage,
-  FiShoppingCart,
+  FiGrid,
+  FiShoppingBag,
   FiClipboard,
-  FiRepeat,
-  FiCheckSquare,
   FiSettings,
   FiUsers,
   FiBox,
@@ -24,19 +22,17 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: <FiHome />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
-  { href: '/products', label: 'Catalog', icon: <FiPackage />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
-  { href: '/cart', label: 'My Cart', icon: <FiShoppingCart />, roles: ['STAFF', 'MANAGER'] },
-  { href: '/approvals', label: 'Approvals', icon: <FiCheckSquare />, roles: ['MANAGER', 'ADMIN'] },
-  { href: '/orders', label: 'Orders', icon: <FiClipboard />, roles: ['STAFF', 'MANAGER', 'ADMIN'] },
-  { href: '/subscriptions', label: 'Subscriptions', icon: <FiRepeat />, roles: ['MANAGER', 'ADMIN'] },
+  { href: '/dashboard', label: 'الرئيسية', icon: <FiHome />, roles: ['CUSTOMER', 'ADMIN'] },
+  { href: '/products', label: 'المتجر', icon: <FiGrid />, roles: ['CUSTOMER', 'ADMIN'] },
+  { href: '/cart', label: 'سلة التسوق', icon: <FiShoppingBag />, roles: ['CUSTOMER', 'ADMIN'] },
+  { href: '/orders', label: 'طلباتي', icon: <FiClipboard />, roles: ['CUSTOMER', 'ADMIN'] },
 ]
 
 const ADMIN_NAV: NavItem[] = [
-  { href: '/admin', label: 'Admin Overview', icon: <FiSettings />, roles: ['ADMIN'] },
-  { href: '/admin/products', label: 'Manage Products', icon: <FiBox />, roles: ['ADMIN'] },
-  { href: '/admin/orders', label: 'All Orders', icon: <FiClipboard />, roles: ['ADMIN'] },
-  { href: '/admin/users', label: 'Users', icon: <FiUsers />, roles: ['ADMIN'] },
+  { href: '/admin', label: 'لوحة الإدارة', icon: <FiSettings />, roles: ['ADMIN'] },
+  { href: '/admin/products', label: 'إدارة المنتجات', icon: <FiBox />, roles: ['ADMIN'] },
+  { href: '/admin/orders', label: 'كل الطلبات', icon: <FiClipboard />, roles: ['ADMIN'] },
+  { href: '/admin/users', label: 'العملاء', icon: <FiUsers />, roles: ['ADMIN'] },
 ]
 
 export default function Sidebar({ role }: { role: Role }) {
@@ -45,20 +41,23 @@ export default function Sidebar({ role }: { role: Role }) {
   const adminItems = ADMIN_NAV.filter((i) => i.roles.includes(role))
 
   return (
-    <aside className="w-60 border-r border-secondary-200 bg-white flex-shrink-0 h-screen sticky top-0 flex flex-col">
+    <aside className="w-60 border-l border-secondary-200 bg-white flex-shrink-0 h-screen sticky top-0 hidden md:flex flex-col">
       <div className="p-4 border-b border-secondary-100 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-md bg-primary-600 text-white flex items-center justify-center font-bold">
-          Z
+        <div className="w-9 h-9 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold">
+          ز
         </div>
-        <span className="font-bold">Zawed</span>
+        <div className="leading-tight">
+          <span className="font-extrabold block">زوّد بيوتي</span>
+          <span className="text-[11px] text-secondary-400">مستحضرات التجميل</span>
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2">
         <SidebarSection items={items} pathname={pathname} />
         {adminItems.length > 0 && (
           <>
-            <div className="mt-6 mb-2 px-3 text-xs font-semibold text-secondary-400 uppercase tracking-wider">
-              Admin
+            <div className="mt-6 mb-2 px-3 text-xs font-semibold text-secondary-400">
+              الإدارة
             </div>
             <SidebarSection items={adminItems} pathname={pathname} />
           </>
@@ -66,9 +65,7 @@ export default function Sidebar({ role }: { role: Role }) {
       </nav>
 
       <div className="p-3 border-t border-secondary-100">
-        <span className="block text-xs text-secondary-400 px-2">
-          {roleLabel(role)}
-        </span>
+        <span className="block text-xs text-secondary-400 px-2">{roleLabel(role)}</span>
       </div>
     </aside>
   )
@@ -101,12 +98,5 @@ function SidebarSection({ items, pathname }: { items: NavItem[]; pathname: strin
 }
 
 function roleLabel(role: Role) {
-  switch (role) {
-    case 'STAFF':
-      return 'Staff'
-    case 'MANAGER':
-      return 'Procurement Manager'
-    case 'ADMIN':
-      return 'System Admin'
-  }
+  return role === 'ADMIN' ? 'مدير المتجر' : 'عميل'
 }

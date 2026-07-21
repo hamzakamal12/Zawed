@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { formatCurrency } from '@/lib/utils'
 import { resolveUnitPrice, type PriceTierLite } from '@/lib/pricing'
-import { FiShoppingCart, FiCheck } from 'react-icons/fi'
+import { FiShoppingBag, FiCheck } from 'react-icons/fi'
 
 export default function AddToCartForm({
   productId,
@@ -38,20 +39,20 @@ export default function AddToCartForm({
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError(data.error || 'Failed to add to cart')
+        setError(data.error || 'تعذّرت الإضافة للسلة')
       } else {
         setAdded(true)
         router.refresh()
       }
     } catch {
-      setError('Network error')
+      setError('خطأ في الاتصال')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="rounded-lg border border-secondary-200 bg-white p-5">
+    <div className="rounded-xl border border-secondary-200 bg-white p-5">
       <div className="flex items-center gap-3">
         <div className="flex items-center rounded-md border border-secondary-300 overflow-hidden">
           <button
@@ -78,13 +79,7 @@ export default function AddToCartForm({
           </button>
         </div>
         <div className="flex-1">
-          <div className="text-xs text-secondary-500">Unit price at this quantity</div>
-          <div className="text-lg font-bold text-secondary-900">
-            {formatCurrency(unitPrice)}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs text-secondary-500 text-right">Subtotal</div>
+          <div className="text-xs text-secondary-500">الإجمالي</div>
           <div className="text-lg font-bold text-primary-600 tabular-nums">
             {formatCurrency(total)}
           </div>
@@ -99,18 +94,24 @@ export default function AddToCartForm({
       >
         {added ? (
           <>
-            <FiCheck /> Added to cart
+            <FiCheck /> تمت الإضافة
           </>
         ) : loading ? (
-          'Adding…'
+          'جارٍ الإضافة…'
         ) : stock === 0 ? (
-          'Out of stock'
+          'نفذت الكمية'
         ) : (
           <>
-            <FiShoppingCart /> Add to cart
+            <FiShoppingBag /> أضيفي إلى السلة
           </>
         )}
       </Button>
+
+      {added && (
+        <Link href="/cart" className="block text-center mt-3 text-sm text-primary-600 hover:underline">
+          الذهاب إلى السلة ←
+        </Link>
+      )}
 
       {error && (
         <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">

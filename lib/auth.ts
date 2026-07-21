@@ -13,7 +13,6 @@ export interface SessionPayload {
   email: string
   name: string
   role: Role
-  companyId: string | null
 }
 
 export async function signSession(payload: SessionPayload): Promise<string> {
@@ -40,7 +39,6 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
       email: payload.email,
       name: payload.name,
       role: payload.role as Role,
-      companyId: (payload.companyId as string | null) ?? null,
     }
   } catch {
     return null

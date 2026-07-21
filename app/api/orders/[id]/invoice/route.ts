@@ -5,15 +5,15 @@ import { generateInvoicePdf } from '@/lib/pdf'
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'يجب تسجيل الدخول' }, { status: 401 })
 
   const order = await prisma.order.findUnique({
     where: { id: params.id },
-    include: { items: true, placedBy: true, company: true },
+    include: { items: true, placedBy: true },
   })
-  if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (order.companyId !== session.companyId && session.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!order) return NextResponse.json({ error: 'غير موجود' }, { status: 404 })
+  if (order.placedById !== session.sub && session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'غير مسموح' }, { status: 403 })
   }
 
   const pdfBytes = await generateInvoicePdf({
@@ -21,8 +21,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     createdAt: order.createdAt,
     status: order.status,
     paymentMethod: order.paymentMethod,
-    company: order.company,
-    placedBy: { name: order.placedBy.name, email: order.placedBy.email },
+    customer: {
+      name: order.customerName,
+      phone: order.customerPhone,
+      city: order.shippingCity,
+      address: order.shippingAddress,
+      email: order.placedBy.email,
+    },
     items: order.items.map((i) => ({
       productName: i.productName,
       productSku: i.productSku,
@@ -33,6 +38,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     })),
     subtotal: Number(order.subtotal),
     taxAmount: Number(order.taxAmount),
+    deliveryFee: Number(order.deliveryFee),
     totalAmount: Number(order.totalAmount),
   })
 

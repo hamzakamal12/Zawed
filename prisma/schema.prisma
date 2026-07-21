@@ -1,4 +1,4 @@
-// Prisma schema for Zawed B2B procurement platform.
+// Prisma schema for Zawed Beauty — B2C cosmetics store (Sudan).
 // Run `npx prisma migrate dev` after editing.
 
 generator client {
@@ -11,61 +11,35 @@ datasource db {
 }
 
 enum Role {
-  STAFF
-  MANAGER
+  CUSTOMER
   ADMIN
 }
 
 enum CartStatus {
   ACTIVE
-  PENDING_APPROVAL
-  APPROVED
-  REJECTED
   CHECKED_OUT
 }
 
 enum OrderStatus {
-  PENDING_PAYMENT
-  PAID
-  CANCELLED
-}
-
-enum SubscriptionFrequency {
-  WEEKLY
-  MONTHLY
-}
-
-model Company {
-  id            String         @id @default(cuid())
-  name          String
-  address       String?
-  taxId         String?
-  phone         String?
-  email         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  users         User[]
-  carts         Cart[]
-  orders        Order[]
-  subscriptions Subscription[]
+  PENDING_PAYMENT // بانتظار الدفع عند الاستلام
+  CONFIRMED       // تم تأكيد الطلب / قيد التوصيل
+  DELIVERED       // تم التوصيل والدفع
+  CANCELLED       // ملغي
 }
 
 model User {
-  id              String         @id @default(cuid())
-  email           String         @unique
-  name            String
-  passwordHash    String
-  role            Role           @default(STAFF)
-  companyId       String?
-  company         Company?       @relation(fields: [companyId], references: [id])
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  carts           Cart[]         @relation("CartOwner")
-  reviewedCarts   Cart[]         @relation("CartReviewer")
-  placedOrders    Order[]        @relation("OrderPlacer")
-  subscriptions   Subscription[] @relation("SubscriptionOwner")
-
-  @@index([companyId])
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  phone        String?
+  city         String?
+  address      String?
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  carts        Cart[]   @relation("CartOwner")
+  orders       Order[]  @relation("OrderPlacer")
 }
 
 model Category {
@@ -73,34 +47,38 @@ model Category {
   name        String    @unique
   slug        String    @unique
   description String?
+  emoji       String?
   createdAt   DateTime  @default(now())
   products    Product[]
 }
 
 model Product {
-  id                 String             @id @default(cuid())
-  sku                String             @unique
-  name               String
-  description        String?
-  imageUrl           String?
-  categoryId         String
-  category           Category           @relation(fields: [categoryId], references: [id])
-  stock              Int                @default(0)
-  lowStockThreshold  Int                @default(10)
-  taxRate            Decimal            @default(0.05) @db.Decimal(5, 4)
-  active             Boolean            @default(true)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  priceTiers         PriceTier[]
-  cartItems          CartItem[]
-  orderItems         OrderItem[]
-  subscriptionItems  SubscriptionItem[]
+  id                String      @id @default(cuid())
+  sku               String      @unique
+  name              String
+  brand             String?
+  description       String?
+  imageUrl          String?
+  categoryId        String
+  category          Category    @relation(fields: [categoryId], references: [id])
+  stock             Int         @default(0)
+  lowStockThreshold Int         @default(5)
+  taxRate           Decimal     @default(0) @db.Decimal(5, 4)
+  active            Boolean     @default(true)
+  featured          Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  priceTiers        PriceTier[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
 
   @@index([categoryId])
   @@index([active])
 }
 
-// A tiered price break. minQty is inclusive; maxQty is inclusive (null = no upper bound).
+// A price break. minQty is inclusive; maxQty is inclusive (null = no upper bound).
+// A retail product normally has a single tier (minQty = 1). Extra tiers enable
+// optional wholesale/bulk discounts.
 model PriceTier {
   id        String  @id @default(cuid())
   productId String
@@ -114,24 +92,16 @@ model PriceTier {
 }
 
 model Cart {
-  id           String     @id @default(cuid())
-  userId       String
-  user         User       @relation("CartOwner", fields: [userId], references: [id])
-  companyId    String
-  company      Company    @relation(fields: [companyId], references: [id])
-  status       CartStatus @default(ACTIVE)
-  notes        String?
-  submittedAt  DateTime?
-  reviewedById String?
-  reviewedBy   User?      @relation("CartReviewer", fields: [reviewedById], references: [id])
-  reviewedAt   DateTime?
-  rejectionReason String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  items        CartItem[]
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation("CartOwner", fields: [userId], references: [id])
+  status    CartStatus @default(ACTIVE)
+  notes     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
 
   @@index([userId, status])
-  @@index([companyId, status])
 }
 
 model CartItem {
@@ -150,13 +120,17 @@ model CartItem {
 model Order {
   id            String      @id @default(cuid())
   orderNumber   String      @unique
-  companyId     String
-  company       Company     @relation(fields: [companyId], references: [id])
   placedById    String
   placedBy      User        @relation("OrderPlacer", fields: [placedById], references: [id])
   status        OrderStatus @default(PENDING_PAYMENT)
+  // Shipping / delivery details captured at checkout.
+  customerName  String
+  customerPhone String
+  shippingCity  String
+  shippingAddress String
   subtotal      Decimal     @db.Decimal(12, 2)
   taxAmount     Decimal     @db.Decimal(12, 2)
+  deliveryFee   Decimal     @default(0) @db.Decimal(12, 2)
   totalAmount   Decimal     @db.Decimal(12, 2)
   paymentMethod String      @default("CASH_ON_DELIVERY")
   notes         String?
@@ -165,7 +139,7 @@ model Order {
   updatedAt     DateTime    @updatedAt
   items         OrderItem[]
 
-  @@index([companyId])
+  @@index([placedById])
   @@index([status])
 }
 
@@ -183,32 +157,4 @@ model OrderItem {
   subtotal    Decimal @db.Decimal(12, 2)
 
   @@index([orderId])
-}
-
-model Subscription {
-  id          String                @id @default(cuid())
-  companyId   String
-  company     Company               @relation(fields: [companyId], references: [id])
-  createdById String
-  createdBy   User                  @relation("SubscriptionOwner", fields: [createdById], references: [id])
-  name        String
-  frequency   SubscriptionFrequency
-  active      Boolean               @default(true)
-  nextRunAt   DateTime?
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  items       SubscriptionItem[]
-
-  @@index([companyId, active])
-}
-
-model SubscriptionItem {
-  id             String       @id @default(cuid())
-  subscriptionId String
-  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  productId      String
-  product        Product      @relation(fields: [productId], references: [id])
-  quantity       Int
-
-  @@unique([subscriptionId, productId])
 }

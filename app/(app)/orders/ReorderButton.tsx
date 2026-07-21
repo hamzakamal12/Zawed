@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
-import { FiRepeat } from 'react-icons/fi'
+import { FiRefreshCw } from 'react-icons/fi'
 
 export default function ReorderButton({ orderId }: { orderId: string }) {
   const router = useRouter()
@@ -19,7 +19,7 @@ export default function ReorderButton({ orderId }: { orderId: string }) {
   }
   return (
     <Button variant="outline" size="sm" onClick={onClick} disabled={loading}>
-      <FiRepeat /> {loading ? 'Reordering…' : 'Reorder'}
+      <FiRefreshCw /> <span className="hidden sm:inline">{loading ? 'جارٍ…' : 'إعادة الطلب'}</span>
     </Button>
   )
 }

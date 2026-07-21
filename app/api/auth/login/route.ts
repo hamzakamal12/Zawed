@@ -26,7 +26,6 @@ export async function POST(req: Request) {
     email: user.email,
     name: user.name,
     role: user.role,
-    companyId: user.companyId,
   })
   cookies().set(SESSION_COOKIE, token, {
     httpOnly: true,

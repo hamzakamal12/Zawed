@@ -9,18 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Rose / pink — the beauty brand accent.
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: '#fdf2f8',
+          100: '#fce7f3',
+          200: '#fbcfe8',
+          300: '#f9a8d4',
+          400: '#f472b6',
+          500: '#ec4899',
+          600: '#db2777',
+          700: '#be185d',
+          800: '#9d174d',
+          900: '#831843',
+          950: '#500724',
         },
         secondary: {
           50: '#f8fafc',
@@ -35,9 +36,15 @@ const config: Config = {
           900: '#0f172a',
           950: '#020617',
         },
+        // Warm gold accent for highlights.
+        gold: {
+          400: '#e5b567',
+          500: '#d4a24e',
+          600: '#b8863b',
+        },
       },
       fontFamily: {
-        sans: ['system-ui', 'sans-serif'],
+        sans: ['Tajawal', 'system-ui', 'Segoe UI', 'sans-serif'],
       },
     },
   },

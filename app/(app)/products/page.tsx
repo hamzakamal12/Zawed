@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import CategoryFilter from '@/components/products/CategoryFilter'
 import ProductCard from '@/components/products/ProductCard'
+import ProductSearch from './ProductSearch'
 
 interface PageProps {
   searchParams: { category?: string; q?: string }
@@ -12,14 +13,13 @@ export default async function ProductsPage({ searchParams }: PageProps) {
     prisma.product.findMany({
       where: {
         active: true,
-        ...(searchParams.category
-          ? { category: { slug: searchParams.category } }
-          : {}),
+        ...(searchParams.category ? { category: { slug: searchParams.category } } : {}),
         ...(searchParams.q
           ? {
               OR: [
                 { name: { contains: searchParams.q, mode: 'insensitive' as const } },
-                { sku: { contains: searchParams.q, mode: 'insensitive' as const } },
+                { brand: { contains: searchParams.q, mode: 'insensitive' as const } },
+                { description: { contains: searchParams.q, mode: 'insensitive' as const } },
               ],
             }
           : {}),
@@ -28,7 +28,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
         category: true,
         priceTiers: { orderBy: { minQty: 'asc' } },
       },
-      orderBy: { name: 'asc' },
+      orderBy: [{ featured: 'desc' }, { name: 'asc' }],
     }),
   ])
 
@@ -40,18 +40,19 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-secondary-900">Catalog</h1>
+        <h1 className="text-3xl font-bold text-secondary-900">المتجر</h1>
         <p className="text-secondary-500 mt-1">
-          Browse pantry, beverages, and office supplies with volume discounts.
+          تصفّحي مستحضرات التجميل والعناية بالبشرة والشعر والعطور.
         </p>
       </div>
 
+      <ProductSearch />
       <CategoryFilter categories={categories} />
 
       {serialized.length === 0 ? (
-        <div className="text-center py-20 text-secondary-500">No products match your filter.</div>
+        <div className="text-center py-20 text-secondary-500">لا توجد منتجات مطابقة.</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {serialized.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

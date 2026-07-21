@@ -36,7 +36,7 @@ export default function StockEditor({ productId, stock }: { productId: string; s
       />
       {dirty && (
         <Button size="sm" onClick={save} disabled={saving}>
-          {saving ? '…' : 'Save'}
+          {saving ? '…' : 'حفظ'}
         </Button>
       )}
     </div>

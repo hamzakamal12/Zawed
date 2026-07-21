@@ -11,19 +11,19 @@ const addSchema = z.object({
 
 export async function POST(req: Request) {
   const session = await getSession()
-  if (!session || !session.companyId) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  if (!session) {
+    return NextResponse.json({ error: 'يجب تسجيل الدخول' }, { status: 401 })
   }
   const body = await req.json().catch(() => null)
   const parsed = addSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: 'بيانات غير صحيحة' }, { status: 400 })
 
   const product = await prisma.product.findUnique({ where: { id: parsed.data.productId } })
   if (!product || !product.active) {
-    return NextResponse.json({ error: 'Product unavailable' }, { status: 404 })
+    return NextResponse.json({ error: 'المنتج غير متوفر' }, { status: 404 })
   }
 
-  const cart = await getOrCreateActiveCart(session.sub, session.companyId)
+  const cart = await getOrCreateActiveCart(session.sub)
 
   const existing = await prisma.cartItem.findUnique({
     where: { cartId_productId: { cartId: cart.id, productId: product.id } },
@@ -50,23 +50,21 @@ const updateSchema = z.object({
 
 export async function PATCH(req: Request) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'يجب تسجيل الدخول' }, { status: 401 })
   const body = await req.json().catch(() => null)
   const parsed = updateSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: 'بيانات غير صحيحة' }, { status: 400 })
 
   const item = await prisma.cartItem.findUnique({
     where: { id: parsed.data.cartItemId },
     include: { cart: true },
   })
-  if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!item) return NextResponse.json({ error: 'غير موجود' }, { status: 404 })
 
-  // Owner of the cart, or a Manager/Admin in the same company, can edit.
-  const canEdit =
-    item.cart.userId === session.sub ||
-    ((session.role === 'MANAGER' || session.role === 'ADMIN') &&
-      item.cart.companyId === session.companyId)
-  if (!canEdit) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  // Only the cart owner can edit their cart.
+  if (item.cart.userId !== session.sub) {
+    return NextResponse.json({ error: 'غير مسموح' }, { status: 403 })
+  }
 
   if (parsed.data.quantity === 0) {
     await prisma.cartItem.delete({ where: { id: item.id } })
@@ -84,22 +82,20 @@ const deleteSchema = z.object({ cartItemId: z.string() })
 
 export async function DELETE(req: Request) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'يجب تسجيل الدخول' }, { status: 401 })
   const body = await req.json().catch(() => null)
   const parsed = deleteSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: 'بيانات غير صحيحة' }, { status: 400 })
 
   const item = await prisma.cartItem.findUnique({
     where: { id: parsed.data.cartItemId },
     include: { cart: true },
   })
-  if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!item) return NextResponse.json({ error: 'غير موجود' }, { status: 404 })
 
-  const canEdit =
-    item.cart.userId === session.sub ||
-    ((session.role === 'MANAGER' || session.role === 'ADMIN') &&
-      item.cart.companyId === session.companyId)
-  if (!canEdit) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (item.cart.userId !== session.sub) {
+    return NextResponse.json({ error: 'غير مسموح' }, { status: 403 })
+  }
 
   await prisma.cartItem.delete({ where: { id: item.id } })
   return NextResponse.json({ ok: true })

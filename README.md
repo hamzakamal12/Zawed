@@ -1,34 +1,41 @@
-# Zawed — B2B Procurement Platform
+# زوّد بيوتي — متجر مستحضرات التجميل (Zawed Beauty)
 
-Corporate office supplies and pantry procurement, built with Next.js, Prisma, and PostgreSQL.
+متجر إلكتروني (B2C) لبيع مستحضرات التجميل والعناية بالبشرة والشعر والعطور في السودان،
+مبني بـ Next.js و Prisma و PostgreSQL. الواجهة بالكامل بالعربية (RTL) وبعملة الجنيه
+السوداني (ج.س)، مع **الدفع عند الاستلام** وتوصيل لكل المدن.
 
-## Features
+> Zawed Beauty is an Arabic (RTL), mobile-first cosmetics store for Sudan with
+> cash-on-delivery checkout, a customer storefront, and an admin back office.
 
-- **Role-based access control**: Staff, Procurement Manager, System Admin
-- **Product catalog** with categories and **dynamic tiered pricing** (volume discounts that automatically apply based on quantity)
-- **Approval workflow**: Staff submits cart → Manager reviews/edits/approves → Manager checks out
-- **Cash on Delivery** checkout with auto-generated **PDF tax invoices**
-- **Inventory management**: per-product stock with **low-stock thresholds** flagged in the admin dashboard
-- **Quick reorder**: one-click duplicate any past order into the current cart
-- **Recurring orders**: save a basket as a weekly or monthly subscription
+## المميزات
 
-## Tech stack
+- **متجر بالعربي RTL** يعمل على الجوال (أندرويد/آيفون) عبر المتصفح، وقابل للتغليف
+  كتطبيق أصلي لاحقاً (Capacitor / PWA).
+- **كتالوج منتجات** مع أصناف (بشرة، مكياج، شعر، عطور، جسم)، بحث، ومنتجات مميّزة.
+- **سلة تسوّق** وإتمام طلب مباشر مع بيانات التوصيل — بدون موافقات.
+- **الدفع عند الاستلام** + **فاتورة PDF** لكل طلب.
+- **رسوم توصيل** ثابتة قابلة للضبط، وتوصيل مجاني فوق حد معيّن.
+- **إعادة الطلب** بضغطة واحدة من الطلبات السابقة.
+- **لوحة تحكم للمدير**: إضافة/تعديل المنتجات، إدارة المخزون وتنبيهات النقص، متابعة
+  الطلبات وتغيير حالتها، وقائمة العملاء.
+
+## التقنيات
 
 - **Next.js 14** (App Router, Server Components, Route Handlers)
-- **React 18** + **Tailwind CSS** for shadcn-style components
-- **PostgreSQL** with **Prisma ORM**
-- **pdf-lib** for server-side invoice generation
-- **jose** + **bcryptjs** for JWT-cookie sessions
-- **zod** for request validation
+- **React 18** + **Tailwind CSS** (بخط Tajawal العربي)
+- **PostgreSQL** مع **Prisma ORM**
+- **pdf-lib** لتوليد الفواتير
+- **jose** + **bcryptjs** لجلسات JWT عبر الكوكيز
+- **zod** للتحقّق من المدخلات
 
-## Getting started
+## التشغيل
 
-### Prerequisites
+### المتطلبات
 
 - Node.js 20+
-- A running PostgreSQL instance (the easiest is Docker)
+- قاعدة بيانات PostgreSQL (الأسهل عبر Docker)
 
-### 1. Start Postgres
+### 1) تشغيل Postgres
 
 ```bash
 docker run -d \
@@ -40,84 +47,74 @@ docker run -d \
   postgres:16-alpine
 ```
 
-### 2. Install & configure
+### 2) التثبيت والإعداد
 
 ```bash
 cp .env.example .env
 npm install
 ```
 
-### 3. Run migrations & seed
+### 3) المايجريشن والبيانات التجريبية
 
 ```bash
 npx prisma migrate dev
 npm run db:seed
 ```
 
-### 4. Start dev server
+### 4) تشغيل الخادم
 
 ```bash
 npm run dev
 ```
 
-Open <http://localhost:3000>.
+افتحي <http://localhost:3000>.
 
-## Demo accounts
+## حسابات تجريبية
 
-All demo accounts use password **`password123`**.
+كلمة المرور للجميع: **`password123`**
 
-| Email                | Role                  | Company |
-| -------------------- | --------------------- | ------- |
-| `admin@zawed.com`    | System Admin          | —       |
-| `manager@acme.com`   | Procurement Manager   | Acme    |
-| `staff@acme.com`     | Staff                 | Acme    |
-| `manager@globex.com` | Procurement Manager   | Globex  |
+| البريد               | النوع            |
+| -------------------- | ---------------- |
+| `admin@zawed.com`    | مدير المتجر      |
+| `sara@example.com`   | عميلة            |
 
-## Workflow
+## سير العمل
 
-1. **Staff** signs in, browses the catalog, adds items to their cart. Unit price updates dynamically as quantity changes based on the product's tiered pricing.
-2. Staff submits the cart for approval (status: `PENDING_APPROVAL`).
-3. **Procurement Manager** sees the pending cart in `/approvals`, can edit quantities directly, then approves.
-4. After approval, the cart status becomes `APPROVED` and the Manager (only) can check out using **Cash on Delivery**.
-5. Checkout creates an `Order` with status `PENDING_PAYMENT`, decrements each product's stock, and issues a downloadable PDF tax invoice.
-6. **Admin** marks the order as `PAID` when payment is collected.
+1. تسجّل العميلة الدخول، تتصفّح المتجر، وتضيف المنتجات للسلة.
+2. من السلة تُدخل بيانات التوصيل (الاسم، الهاتف، المدينة، العنوان) وتؤكّد الطلب
+   (الدفع عند الاستلام). يُنشأ طلب بحالة **قيد المعالجة** ويُخصم المخزون.
+3. تحمّل العميلة **فاتورة PDF**، ويمكنها إعادة الطلب لاحقاً بضغطة.
+4. **المدير** يتابع الطلب من `/admin/orders` أو صفحة الطلب: **تأكيد** → **تم التوصيل**
+   (يُسجّل الدفع)، أو **إلغاء**.
 
-## Scripts
+## من متجر أعمال (B2B) إلى متجر تجميل (B2C)
 
-| Command                | What it does                                  |
-| ---------------------- | --------------------------------------------- |
-| `npm run dev`          | Next.js dev server on :3000                   |
-| `npm run build`        | Production build (`prisma generate` + `next build`) |
-| `npm run start`        | Production server                             |
-| `npm run lint`         | ESLint (Next config)                          |
-| `npm run typecheck`    | `tsc --noEmit`                                |
-| `npm run db:seed`      | Seed demo companies, users, and products      |
-| `npm run prisma:migrate` | Create & apply a new migration              |
-| `npm run prisma:studio` | Open Prisma Studio                           |
+هذا المشروع بُني بإعادة استخدام بنية منصّة مشتريات B2B سابقة وتحويلها إلى متجر تجميل
+استهلاكي: أُزيلت الشركات وسير الموافقات والاشتراكات، وأُضيفت بيانات التوصيل والدفع عند
+الاستلام ورسوم التوصيل، وعُرّبت الواجهة بالكامل (RTL) بعملة الجنيه السوداني.
 
-## Project layout
+## ملاحظات
+
+- **فاتورة PDF**: يستخدم المولّد خطوطاً لاتينية قياسية، لذا تُعرض عناوين الفاتورة
+  بالإنجليزية والأرقام بالأرقام اللاتينية، مع تنقية النصوص العربية تلقائياً حتى لا
+  يفشل التوليد. لعرض النصوص العربية داخل الـ PDF، يُضمّن خط عربي (TTF) عبر
+  `@pdf-lib/fontkit` — تحسين مستقبلي مقترح.
+- **إلى تطبيق أصلي**: هذا تطبيق ويب يعمل على الأندرويد والآيفون عبر المتصفح. لنشره على
+  المتاجر كتطبيق أصلي، يمكن تغليفه بـ **Capacitor** أو تحويله إلى **PWA**.
+
+## البنية
 
 ```
 app/
-  (app)/              Authenticated pages (dashboard, catalog, cart, …)
-  api/                Route Handlers (auth, cart, orders, admin)
-  login/, register/   Public auth pages
-components/
-  ui/                 Buttons, cards, inputs, badges, modal
-  products/           Catalog UI bits
-lib/
-  auth.ts             JWT + bcrypt helpers
-  cart.ts             Active-cart resolver + totals computation
-  db.ts               Prisma client singleton
-  pdf.ts              Invoice PDF generator
-  pricing.ts          Tiered-pricing resolver
-  session.ts          Server-side session/role guards
-prisma/
-  schema.prisma       Companies, users, products, tiers, carts, orders, subscriptions
-  seed.ts             Demo dataset
-middleware.ts         Cookie-session auth gate & role-based route protection
+  (app)/              الصفحات بعد تسجيل الدخول (الرئيسية، المتجر، السلة، الطلبات، الإدارة)
+  api/                معالجات المسارات (المصادقة، السلة، الطلبات، الإدارة)
+  login/, register/   صفحات الدخول والتسجيل
+components/            الواجهة (الأزرار، البطاقات، الشريط الجانبي، تنقّل الجوال)
+lib/                  auth / session / cart / pricing / pdf / utils / db
+prisma/               schema.prisma + seed.ts + migrations
+middleware.ts         حماية الجلسة والمسارات حسب الدور
 ```
 
-## License
+## الرخصة
 
 MIT

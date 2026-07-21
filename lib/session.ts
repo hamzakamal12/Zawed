@@ -27,8 +27,5 @@ export async function requireRole(roles: Role[]): Promise<SessionPayload> {
 export async function getCurrentUser() {
   const session = await getSession()
   if (!session) return null
-  return prisma.user.findUnique({
-    where: { id: session.sub },
-    include: { company: true },
-  })
+  return prisma.user.findUnique({ where: { id: session.sub } })
 }

@@ -2,14 +2,22 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Zawed — B2B Procurement Platform',
+  title: 'زوّد بيوتي — متجر مستحضرات التجميل',
   description:
-    'Corporate office supplies and pantry procurement with tiered pricing, approval workflows, and automated invoicing.',
+    'زوّد بيوتي: متجر إلكتروني لمستحضرات التجميل والعناية بالبشرة والشعر في السودان. منتجات أصلية، الدفع عند الاستلام، وتوصيل سريع.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   )

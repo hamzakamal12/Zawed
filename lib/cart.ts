@@ -4,14 +4,14 @@ import { resolveUnitPrice } from './pricing'
 /**
  * Get-or-create the active cart for a user. Each user has at most one ACTIVE cart at a time.
  */
-export async function getOrCreateActiveCart(userId: string, companyId: string) {
+export async function getOrCreateActiveCart(userId: string) {
   const existing = await prisma.cart.findFirst({
     where: { userId, status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
   })
   if (existing) return existing
   return prisma.cart.create({
-    data: { userId, companyId, status: 'ACTIVE' },
+    data: { userId, status: 'ACTIVE' },
   })
 }
 

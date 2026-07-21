@@ -5,20 +5,20 @@ import { getOrCreateActiveCart } from '@/lib/cart'
 
 export async function POST(_req: Request, { params }: { params: { id: string } }) {
   const session = await getSession()
-  if (!session || !session.companyId) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  if (!session) {
+    return NextResponse.json({ error: 'يجب تسجيل الدخول' }, { status: 401 })
   }
 
   const order = await prisma.order.findUnique({
     where: { id: params.id },
     include: { items: true },
   })
-  if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (order.companyId !== session.companyId && session.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!order) return NextResponse.json({ error: 'غير موجود' }, { status: 404 })
+  if (order.placedById !== session.sub && session.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'غير مسموح' }, { status: 403 })
   }
 
-  const cart = await getOrCreateActiveCart(session.sub, session.companyId)
+  const cart = await getOrCreateActiveCart(session.sub)
 
   for (const item of order.items) {
     const product = await prisma.product.findUnique({ where: { id: item.productId } })

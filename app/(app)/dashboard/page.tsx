@@ -5,182 +5,150 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Button from '@/components/ui/Button'
-import { FiArrowRight, FiPlus } from 'react-icons/fi'
+import ProductCard from '@/components/products/ProductCard'
+import { FiArrowLeft, FiShoppingBag } from 'react-icons/fi'
 
 export default async function DashboardPage() {
   const session = await requireSession()
 
-  const [stats, recentOrders, pendingApprovals, company] = await Promise.all([
+  const [stats, recentOrders, featured, activeCart] = await Promise.all([
     prisma.order.aggregate({
-      where: { companyId: session.companyId ?? '' },
+      where: { placedById: session.sub },
       _count: true,
       _sum: { totalAmount: true },
     }),
     prisma.order.findMany({
-      where: { companyId: session.companyId ?? '' },
+      where: { placedById: session.sub },
       orderBy: { createdAt: 'desc' },
       take: 5,
-      include: { placedBy: true },
     }),
-    prisma.cart.count({
-      where: { companyId: session.companyId ?? '', status: 'PENDING_APPROVAL' },
+    prisma.product.findMany({
+      where: { active: true, featured: true, stock: { gt: 0 } },
+      include: { category: true, priceTiers: { orderBy: { minQty: 'asc' } } },
+      take: 4,
     }),
-    prisma.company.findUnique({ where: { id: session.companyId ?? '' } }),
+    prisma.cart.findFirst({
+      where: { userId: session.sub, status: 'ACTIVE' },
+      include: { _count: { select: { items: true } } },
+    }),
   ])
 
   const totalSpend = stats._sum.totalAmount ? Number(stats._sum.totalAmount) : 0
+  const cartCount = activeCart?._count.items ?? 0
+  const featuredSerialized = featured.map((p) => ({
+    ...p,
+    priceTiers: p.priceTiers.map((t) => ({ ...t, unitPrice: t.unitPrice.toString() })),
+  }))
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-secondary-900">
-          Welcome back, {session.name.split(' ')[0]}
+          أهلاً {session.name.split(' ')[0]} 👋
         </h1>
-        <p className="text-secondary-500 mt-1">
-          {company?.name ?? 'Your company'} — {roleLabel(session.role)}
-        </p>
+        <p className="text-secondary-500 mt-1">نورتِ زوّد بيوتي — جمالكِ يبدأ من هنا.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Orders placed" value={String(stats._count)} />
-        <StatCard label="Total spend" value={formatCurrency(totalSpend)} />
-        <StatCard label="Pending approvals" value={String(pendingApprovals)} />
-        <StatCard
-          label="Company code"
-          value={company?.id ?? '—'}
-          hint="Share to invite teammates"
-          small
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="عدد طلباتي" value={String(stats._count)} />
+        <StatCard label="إجمالي مشترياتي" value={formatCurrency(totalSpend)} />
+        <StatCard label="في السلة الآن" value={`${cartCount} منتج`} />
+        <Card className="bg-primary-600 text-white">
+          <CardContent className="pt-6">
+            <div className="text-xs font-medium opacity-90">جاهزة للتسوّق؟</div>
+            <Link href="/products">
+              <Button variant="secondary" size="sm" className="mt-2 bg-white text-primary-700 hover:bg-primary-50">
+                <FiShoppingBag /> تصفّحي المتجر
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Recent orders</CardTitle>
-              <Link
-                href="/orders"
-                className="text-sm text-primary-600 hover:underline inline-flex items-center gap-1"
-              >
-                View all <FiArrowRight />
+      {featuredSerialized.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold text-secondary-900">منتجات مميّزة ✨</h2>
+            <Link href="/products" className="text-sm text-primary-600 hover:underline inline-flex items-center gap-1">
+              عرض الكل <FiArrowLeft />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {featuredSerialized.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>آخر طلباتي</CardTitle>
+            <Link href="/orders" className="text-sm text-primary-600 hover:underline inline-flex items-center gap-1">
+              عرض الكل <FiArrowLeft />
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recentOrders.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-secondary-500 mb-4">لا توجد طلبات بعد.</p>
+              <Link href="/products">
+                <Button size="sm">
+                  <FiShoppingBag /> ابدئي التسوّق
+                </Button>
               </Link>
             </div>
-          </CardHeader>
-          <CardContent>
-            {recentOrders.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-secondary-500 mb-4">No orders yet.</p>
-                <Link href="/products">
-                  <Button size="sm">
-                    <FiPlus /> Browse catalog
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <ul className="divide-y divide-secondary-100">
-                {recentOrders.map((order) => (
-                  <li key={order.id} className="py-3 flex items-center justify-between gap-4">
-                    <div>
-                      <Link
-                        href={`/orders/${order.id}`}
-                        className="font-medium text-secondary-900 hover:text-primary-600"
-                      >
-                        {order.orderNumber}
-                      </Link>
-                      <div className="text-xs text-secondary-500 mt-0.5">
-                        {formatDate(order.createdAt)} · by {order.placedBy.name}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium tabular-nums">
-                        {formatCurrency(Number(order.totalAmount))}
-                      </span>
-                      <OrderStatusBadge status={order.status} />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Link href="/products" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                Browse catalog
-              </Button>
-            </Link>
-            <Link href="/cart" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                View my cart
-              </Button>
-            </Link>
-            <Link href="/orders" className="block">
-              <Button variant="outline" className="w-full justify-start">
-                Reorder previous
-              </Button>
-            </Link>
-            {(session.role === 'MANAGER' || session.role === 'ADMIN') && (
-              <Link href="/approvals" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  Review approvals ({pendingApprovals})
-                </Button>
-              </Link>
-            )}
-            {session.role === 'ADMIN' && (
-              <Link href="/admin" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  Admin dashboard
-                </Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          ) : (
+            <ul className="divide-y divide-secondary-100">
+              {recentOrders.map((order) => (
+                <li key={order.id} className="py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <Link
+                      href={`/orders/${order.id}`}
+                      className="font-medium text-secondary-900 hover:text-primary-600"
+                    >
+                      {order.orderNumber}
+                    </Link>
+                    <div className="text-xs text-secondary-500 mt-0.5">{formatDate(order.createdAt)}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium tabular-nums">
+                      {formatCurrency(Number(order.totalAmount))}
+                    </span>
+                    <OrderStatusBadge status={order.status} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
 
-function StatCard({
-  label,
-  value,
-  hint,
-  small,
-}: {
-  label: string
-  value: string
-  hint?: string
-  small?: boolean
-}) {
+function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="text-xs font-medium text-secondary-500 uppercase tracking-wide">{label}</div>
-        <div
-          className={
-            small
-              ? 'text-xs font-mono mt-1 text-secondary-900 break-all'
-              : 'text-2xl font-bold text-secondary-900 mt-1'
-          }
-        >
-          {value}
-        </div>
-        {hint && <div className="text-xs text-secondary-400 mt-1">{hint}</div>}
+        <div className="text-xs font-medium text-secondary-500">{label}</div>
+        <div className="text-2xl font-bold text-secondary-900 mt-1">{value}</div>
       </CardContent>
     </Card>
   )
 }
 
 function OrderStatusBadge({ status }: { status: string }) {
-  if (status === 'PAID') return <Badge variant="success">Paid</Badge>
-  if (status === 'CANCELLED') return <Badge variant="danger">Cancelled</Badge>
-  return <Badge variant="warning">Pending payment</Badge>
-}
-
-function roleLabel(role: string) {
-  return role === 'STAFF' ? 'Staff' : role === 'MANAGER' ? 'Procurement Manager' : 'System Admin'
+  switch (status) {
+    case 'DELIVERED':
+      return <Badge variant="success">تم التوصيل</Badge>
+    case 'CONFIRMED':
+      return <Badge variant="info">قيد التوصيل</Badge>
+    case 'CANCELLED':
+      return <Badge variant="danger">ملغي</Badge>
+    default:
+      return <Badge variant="warning">قيد المعالجة</Badge>
+  }
 }
