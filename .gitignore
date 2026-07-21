@@ -14,3 +14,7 @@ coverage
 .turbo
 next-env.d.ts.bak
 tsconfig.tsbuildinfo
+
+# Capacitor generated native projects (scaffolded locally with Android Studio / Xcode)
+/android
+/ios

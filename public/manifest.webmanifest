@@ -1,0 +1,21 @@
+{
+  "name": "زوّد بيوتي — متجر مستحضرات التجميل",
+  "short_name": "زوّد بيوتي",
+  "description": "متجر إلكتروني لمستحضرات التجميل والعناية في السودان — الدفع عند الاستلام.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#db2777",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

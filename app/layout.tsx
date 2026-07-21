@@ -1,10 +1,20 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
   title: 'زوّد بيوتي — متجر مستحضرات التجميل',
   description:
     'زوّد بيوتي: متجر إلكتروني لمستحضرات التجميل والعناية بالبشرة والشعر في السودان. منتجات أصلية، الدفع عند الاستلام، وتوصيل سريع.',
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon.svg', apple: '/icon.svg' },
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'زوّد بيوتي' },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#db2777',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
