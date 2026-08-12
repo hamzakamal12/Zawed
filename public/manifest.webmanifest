@@ -1,0 +1,16 @@
+{
+  "name": "زوّد سبلاي — توريدات المكاتب",
+  "short_name": "زوّد سبلاي",
+  "description": "منصة توريد مستلزمات المكاتب للشركات والمنظمات في السودان",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0d5c63",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
