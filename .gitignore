@@ -1,20 +1,17 @@
 node_modules
-.next
-out
 dist
 build
+.next
+out
 .env
 .env*.local
 .DS_Store
 *.log
 coverage
-.pnp
-.pnp.js
 .vercel
 .turbo
-next-env.d.ts.bak
 tsconfig.tsbuildinfo
 
-# Capacitor generated native projects (scaffolded locally with Android Studio / Xcode)
-/android
-/ios
+# Supabase CLI local artifacts
+supabase/.branches
+supabase/.temp

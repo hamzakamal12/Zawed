@@ -1,0 +1,16 @@
+# Supabase CLI project config. Docs: https://supabase.com/docs/guides/cli/config
+project_id = "zawed-supply"
+
+[db]
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+enable_signup = true
+# Phone/OTP sign-in is the primary flow for the storefront.
+[auth.sms]
+enable_signup = true
+enable_confirmations = false
