@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAdminOrders, useUpdateOrderStatus } from '@/hooks/queries'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDate, formatSDG } from '@/lib/format'
-import { Card, CardBody, EmptyState, Select, Skeleton } from '@/components/ui'
+import { Badge, Card, CardBody, EmptyState, Select, Skeleton } from '@/components/ui'
 import OrderStatusBadge, { ORDER_STATUSES, useStatusLabel } from '@/components/OrderStatusBadge'
 import type { OrderStatus } from '@/lib/database.types'
 
@@ -64,11 +64,20 @@ export default function AdminOrdersPage() {
                     {formatSDG(o.total)}
                   </span>
                   <OrderStatusBadge status={o.status} />
+                  {/* The database refuses to advance an order the customer has
+                      not approved. Disabling the control here means staff see
+                      why, instead of picking a status and getting an error. */}
+                  {o.internal_approval === 'pending' && (
+                    <Badge tone="warning">{t('awaiting_internal_approval')}</Badge>
+                  )}
                   <Select
                     aria-label={t('change_status')}
+                    title={
+                      o.internal_approval === 'pending' ? t('blocked_until_approved') : undefined
+                    }
                     className="h-9 w-auto min-w-[150px] text-xs"
                     value={o.status}
-                    disabled={update.isPending}
+                    disabled={update.isPending || o.internal_approval === 'pending'}
                     onChange={(e) =>
                       update.mutate({ orderId: o.id, status: e.target.value as OrderStatus })
                     }

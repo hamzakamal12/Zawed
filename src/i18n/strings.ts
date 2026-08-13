@@ -51,6 +51,12 @@ export const strings = {
     payment_terms: 'شروط الدفع',
     payment_terms_days: 'الدفع خلال {d} يوماً من الاستلام',
     payment_terms_cash: 'الدفع عند الاستلام',
+    proforma_raised: 'صدرت الفاتورة المبدئية',
+    proforma_awaiting_note: 'أُرسلت الفاتورة المبدئية لمسؤول حساب مؤسستكم للاعتماد. يُؤكَّد الطلب فور الموافقة.',
+    awaiting_internal_approval: 'بانتظار اعتماد العميل',
+    approval_confirms_order: 'الموافقة تؤكّد الطلب وتحوّل الفاتورة المبدئية إلى طلب توريد.',
+    review_proforma: 'راجع الفاتورة المبدئية',
+    blocked_until_approved: 'لا يمكن تنفيذ الطلب قبل اعتماد مسؤول حساب العميل.',
 
     // auth
     auth_headline: 'توريد مكتبك، بسعر يواكب السوق',
@@ -389,6 +395,12 @@ export const strings = {
     payment_terms: 'Payment terms',
     payment_terms_days: 'Payable within {d} days of delivery',
     payment_terms_cash: 'Payable on delivery',
+    proforma_raised: 'Proforma invoice issued',
+    proforma_awaiting_note: 'The proforma has gone to your organization\u2019s account manager for approval. The order is confirmed as soon as they sign it off.',
+    awaiting_internal_approval: 'Awaiting customer approval',
+    approval_confirms_order: 'Approving confirms the order and turns this proforma into a live supply order.',
+    review_proforma: 'Review the proforma',
+    blocked_until_approved: 'This order cannot be worked on until the customer\u2019s account manager approves it.',
 
     auth_headline: 'Office supply, priced to the market',
     auth_sub: 'Prices that track the exchange rate in real time, auditable orders, and ready invoices — built for organizations in Sudan.',

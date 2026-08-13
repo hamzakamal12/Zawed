@@ -4,6 +4,8 @@ import { useDecideApproval, usePendingApprovals } from '@/hooks/documents'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDate, formatSDG } from '@/lib/format'
 import { Badge, Button, Card, CardBody, EmptyState, Input, Notice, Skeleton } from '@/components/ui'
+import { DocumentButton } from '@/components/DocumentButtons'
+import { buildOrderDoc } from '@/lib/pdf/orderDoc'
 
 export default function ApprovalsPage() {
   const { t, pick, lang } = useI18n()
@@ -82,6 +84,17 @@ export default function ApprovalsPage() {
                 {order.notes && (
                   <p className="rounded-lg bg-canvas px-3 py-2 text-sm text-muted">{order.notes}</p>
                 )}
+
+                {/* Officials approve a DOCUMENT. Handing them the same
+                    proforma the buyer received is what makes this a real
+                    authorisation step rather than a click-through. */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+                  <DocumentButton
+                    kind="proforma"
+                    build={() => buildOrderDoc(order, 'proforma', pick)}
+                  />
+                  <span className="text-xs text-muted">{t('approval_confirms_order')}</span>
+                </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Input

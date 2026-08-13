@@ -3,11 +3,13 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { CalendarClock, CheckCircle2 } from 'lucide-react'
 import { useCart } from '@/context/CartProvider'
 import { useAuth } from '@/context/AuthProvider'
-import { usePlaceOrder } from '@/hooks/queries'
+import { useOrder, usePlaceOrder } from '@/hooks/queries'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { enqueueOrder } from '@/lib/orderQueue'
 import { useI18n } from '@/i18n/I18nProvider'
 import { Button, Card, CardBody, CardTitle, Input, Label, Notice, Textarea } from '@/components/ui'
+import { DocumentButton } from '@/components/DocumentButtons'
+import { buildOrderDoc } from '@/lib/pdf/orderDoc'
 
 export default function CheckoutPage() {
   const { t } = useI18n()
@@ -48,18 +50,12 @@ export default function CheckoutPage() {
   if (placeOrder.isSuccess) {
     const result = placeOrder.data
     return (
-      <div className="mx-auto max-w-md py-10 text-center">
-        <CheckCircle2 size={56} className="mx-auto text-status-good" />
-        <h1 className="mt-4 text-xl font-extrabold text-ink">{t('order_placed')}</h1>
-        <p className="mt-2 text-sm text-muted">{t('order_placed_note')}</p>
-        <p className="mt-3 font-mono text-lg font-bold text-primary-700">{result.order_number}</p>
-        <div className="mt-6 flex justify-center gap-2">
-          <Button onClick={() => navigate(`/orders/${result.order_id}`)}>{t('view_order')}</Button>
-          <Button variant="outline" onClick={() => navigate('/catalog')}>
-            {t('browse_catalog')}
-          </Button>
-        </div>
-      </div>
+      <OrderPlaced
+        orderId={result.order_id}
+        orderNumber={result.order_number}
+        onView={() => navigate(`/orders/${result.order_id}`)}
+        onBrowse={() => navigate('/catalog')}
+      />
     )
   }
 
@@ -160,6 +156,61 @@ export default function CheckoutPage() {
           </form>
         </CardBody>
       </Card>
+    </div>
+  )
+}
+
+/**
+ * What the buyer sees the moment they submit.
+ *
+ * The order is not yet a commitment: it is a proforma, and until the company's
+ * own approver signs it off the supplier cannot act on it. So this screen
+ * hands over the PDF straight away — that document is what gets circulated
+ * internally for approval, and asking the buyer to go hunting for it on the
+ * order page is how the approval step gets skipped.
+ */
+function OrderPlaced({
+  orderId,
+  orderNumber,
+  onView,
+  onBrowse,
+}: {
+  orderId: string
+  orderNumber: string
+  onView: () => void
+  onBrowse: () => void
+}) {
+  const { t, pick } = useI18n()
+  const order = useOrder(orderId)
+  const awaitingApproval = order.data?.internal_approval === 'pending'
+
+  return (
+    <div className="mx-auto max-w-md py-10 text-center">
+      <CheckCircle2 size={56} className="mx-auto text-status-good" />
+      <h1 className="mt-4 text-xl font-extrabold text-ink">
+        {awaitingApproval ? t('proforma_raised') : t('order_placed')}
+      </h1>
+      <p className="mt-2 text-sm text-muted">
+        {awaitingApproval ? t('proforma_awaiting_note') : t('order_placed_note')}
+      </p>
+      <p className="mt-3 font-mono text-lg font-bold text-primary-700">{orderNumber}</p>
+
+      {order.data && (
+        <div className="mt-5 flex justify-center">
+          <DocumentButton
+            kind="proforma"
+            size="md"
+            build={() => buildOrderDoc(order.data!, 'proforma', pick)}
+          />
+        </div>
+      )}
+
+      <div className="mt-6 flex justify-center gap-2">
+        <Button onClick={onView}>{t('view_order')}</Button>
+        <Button variant="outline" onClick={onBrowse}>
+          {t('browse_catalog')}
+        </Button>
+      </div>
     </div>
   )
 }

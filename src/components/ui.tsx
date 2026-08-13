@@ -30,7 +30,10 @@ const variants: Record<Variant, string> = {
   // resolved by stylesheet order, not by which one was passed last.
   inverse: 'bg-white text-primary-700 shadow-sm hover:bg-primary-50 active:bg-primary-100',
   danger: 'bg-status-critical text-white shadow-sm hover:brightness-95 disabled:opacity-50',
-  success: 'bg-status-good text-white shadow-sm hover:brightness-95 disabled:opacity-50',
+  // Not the raw status-good token: white on it is 3.35:1. This darker green is
+  // the shade Badge already uses for success text, and clears AA at 5.5:1.
+  // The token itself is unchanged — it stays correct as a status/chart fill.
+  success: 'bg-[#0a7a0a] text-white shadow-sm hover:brightness-95 disabled:opacity-50',
 }
 
 // Min 44px tap targets on md/lg (mobile spec).

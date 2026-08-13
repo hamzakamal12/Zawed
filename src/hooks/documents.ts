@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthProvider'
+import type { OrderWithItems } from './queries'
 import type {
   Company,
   Invoice,
@@ -241,20 +242,20 @@ export function usePendingApprovals() {
     queryKey: ['pending-approvals', profile?.company_id],
     enabled: profile?.role === 'customer_admin',
     queryFn: async () => {
+      // Selects the full OrderWithItems shape, not just what the list renders:
+      // the approver also raises the proforma PDF from this row, and that needs
+      // line_total and the company party block. Selecting less produced a
+      // document with NaN line totals and no customer name.
       const { data, error } = await supabase
         .from('orders')
-        .select('*, order_items(id, qty, unit_price_snapshot, products(name_ar, name_en, sku))')
+        .select(
+          '*, companies(name_ar, name_en, tax_id, billing_address), ' +
+            'order_items(*, products(name_ar, name_en, sku, unit))',
+        )
         .eq('internal_approval', 'pending')
         .order('created_at', { ascending: false })
       if (error) throw error
-      return (data ?? []) as unknown as (Order & {
-        order_items: {
-          id: string
-          qty: number
-          unit_price_snapshot: number
-          products: Pick<Product, 'name_ar' | 'name_en' | 'sku'> | null
-        }[]
-      })[]
+      return (data ?? []) as unknown as OrderWithItems[]
     },
   })
 }
