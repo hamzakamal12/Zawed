@@ -1,54 +1,27 @@
-/** Ambient types for PDF dependencies that ship without their own. */
-
-declare module 'arabic-reshaper' {
-  /** Maps Arabic letters to their contextual presentation forms. */
-  export function convertArabic(text: string): string
-  export function convertArabicBack(text: string): string
-  const _default: {
-    convertArabic(text: string): string
-    convertArabicBack(text: string): string
-  }
-  export default _default
-}
-
-declare module 'bidi-js' {
-  export interface EmbeddingLevels {
-    levels: Uint8Array
-    paragraphs: { start: number; end: number; level: number }[]
-  }
-  export interface Bidi {
-    getEmbeddingLevels(text: string, baseDirection?: 'ltr' | 'rtl' | 'auto'): EmbeddingLevels
-    getReorderSegments(
-      text: string,
-      embeddingLevels: EmbeddingLevels,
-      start?: number,
-      end?: number,
-    ): [number, number][]
-    getMirroredCharactersMap(
-      text: string,
-      embeddingLevels: EmbeddingLevels,
-      start?: number,
-      end?: number,
-    ): Map<number, string>
-  }
-  export default function bidiFactory(): Bidi
-}
+/** Ambient types for pdfmake, which ships without usable ones for 0.3.x. */
 
 declare module 'pdfmake/build/pdfmake' {
+  /** pdfmake 0.3 output methods are promise-based (no callbacks). */
+  export interface PdfDoc {
+    download(fileName?: string): Promise<void>
+    open(win?: Window | null): Promise<void>
+    getDataUrl(): Promise<string>
+    getBlob(): Promise<Blob>
+    getBase64(): Promise<string>
+  }
+  export interface FontFamily {
+    normal: string
+    bold?: string
+    italics?: string
+    bolditalics?: string
+  }
   const pdfMake: {
-    createPdf(
-      docDefinition: unknown,
-      tableLayouts?: unknown,
-      fonts?: unknown,
-      vfs?: unknown,
-    ): {
-      download(fileName?: string): void
-      open(): void
-      getDataUrl(cb: (dataUrl: string) => void): void
-      getBlob(cb: (blob: Blob) => void): void
-    }
-    vfs: Record<string, string>
-    fonts: Record<string, unknown>
+    /** Flat map of { 'File.ttf': base64 }. */
+    addVirtualFileSystem(vfs: Record<string, string>): void
+    /** Replaces the built-in font map (Roboto) entirely. */
+    setFonts(fonts: Record<string, FontFamily>): void
+    addFonts(fonts: Record<string, FontFamily>): void
+    createPdf(docDefinition: unknown, options?: unknown): PdfDoc
   }
   export default pdfMake
 }

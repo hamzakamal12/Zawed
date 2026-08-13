@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PDF render check</title>
+    <style>
+      body { margin: 0; background: #eef2f3; font-family: sans-serif; }
+      #status { padding: 8px 12px; font: 13px monospace; background: #0f2b34; color: #fff; }
+      canvas { display: block; margin: 12px auto; box-shadow: 0 2px 12px rgba(0,0,0,.18); background:#fff; }
+    </style>
+  </head>
+  <body>
+    <div id="status">…</div>
+    <div id="out"></div>
+    <script type="module" src="/src/dev/pdfcheck.ts"></script>
+  </body>
+</html>

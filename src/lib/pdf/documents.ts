@@ -69,7 +69,10 @@ const LINE = '#e3eaec'
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-const money = (v: number) => `${Math.round(Number(v) || 0).toLocaleString('en-US')} ج.س`
+// U+200F (RLM) fixes the direction of the run so the '.' inside "ج.س" keeps
+// its place; without it the neutral character drifts and the dot disappears.
+const RLM = '\u200F'
+const money = (v: number) => `${Math.round(Number(v) || 0).toLocaleString('en-US')} ${RLM}ج.س${RLM}`
 const num = (v: number) => Number(v || 0).toLocaleString('en-US')
 
 function isoDate(value: string | Date | null | undefined): string {
@@ -80,8 +83,17 @@ function isoDate(value: string | Date | null | undefined): string {
     .format(d)
 }
 
-/** Arabic label + English gloss, e.g. "الصنف / Description". */
-const bi = (arabic: string, english: string) => ar(`${arabic} / ${english}`)
+/**
+ * Bilingual label. Arabic and English go on separate lines rather than into
+ * one "العربية / English" string: a mixed-direction run puts the separator in
+ * an unpredictable place, while two stacked runs are each unambiguous.
+ */
+const bi = (arabic: string, english: string) => ({
+  stack: [
+    { text: ar(arabic) },
+    { text: english, style: 'labelEn' as const },
+  ],
+})
 
 let fontsReady: Promise<Record<string, string>> | null = null
 
@@ -98,17 +110,19 @@ async function ttfToBase64(url: string): Promise<string> {
 }
 
 /**
- * Fonts live in /public and are fetched only when a document is generated,
- * so the ~190KB of TTF never enters the main JS bundle.
+ * Amiri is used for documents rather than the UI's Cairo: it carries complete
+ * Arabic coverage and reads as a traditional invoice face. The TTFs live in
+ * /public and are fetched only when a document is generated, so they never
+ * enter the main JS bundle.
  */
 function loadFonts(): Promise<Record<string, string>> {
   if (!fontsReady) {
     fontsReady = Promise.all([
-      ttfToBase64('/fonts/Cairo-Regular.ttf'),
-      ttfToBase64('/fonts/Cairo-Bold.ttf'),
+      ttfToBase64('/fonts/Amiri-Regular.ttf'),
+      ttfToBase64('/fonts/Amiri-Bold.ttf'),
     ]).then(([regular, bold]) => ({
-      'Cairo-Regular.ttf': regular,
-      'Cairo-Bold.ttf': bold,
+      'Amiri-Regular.ttf': regular,
+      'Amiri-Bold.ttf': bold,
     }))
   }
   return fontsReady
@@ -127,15 +141,15 @@ function buildDocDefinition(data: DocData) {
   // column the eye meets (#) must therefore be LAST in the array.
   const tableHeader = showPrices
     ? [
-        { text: bi('الإجمالي', 'Amount'), style: 'th', alignment: 'left' },
-        { text: bi('سعر الوحدة', 'Unit Price'), style: 'th', alignment: 'left' },
-        { text: bi('الكمية', 'Qty'), style: 'th', alignment: 'center' },
-        { text: bi('الصنف', 'Description'), style: 'th', alignment: 'right' },
+        { ...bi('الإجمالي', 'Amount'), style: 'th', alignment: 'left' },
+        { ...bi('سعر الوحدة', 'Unit Price'), style: 'th', alignment: 'left' },
+        { ...bi('الكمية', 'Qty'), style: 'th', alignment: 'center' },
+        { ...bi('الصنف', 'Description'), style: 'th', alignment: 'right' },
         { text: '#', style: 'th', alignment: 'center' },
       ]
     : [
-        { text: bi('الكمية', 'Qty'), style: 'th', alignment: 'center' },
-        { text: bi('الصنف', 'Description'), style: 'th', alignment: 'right' },
+        { ...bi('الكمية', 'Qty'), style: 'th', alignment: 'center' },
+        { ...bi('الصنف', 'Description'), style: 'th', alignment: 'right' },
         { text: '#', style: 'th', alignment: 'center' },
       ]
 
@@ -221,7 +235,7 @@ function buildDocDefinition(data: DocData) {
             {
               stack: [
                 {
-                  text: bi(
+                  ...bi(
                     data.kind === 'delivery_note' ? 'تسليم إلى' : 'فاتورة إلى',
                     data.kind === 'delivery_note' ? 'Deliver To' : 'Bill To',
                   ),
@@ -291,19 +305,19 @@ function buildDocDefinition(data: DocData) {
             body: [
               [
                 { text: money(data.subtotal), alignment: 'left', style: 'td' },
-                { text: bi('المجموع الفرعي', 'Subtotal'), alignment: 'right', style: 'totalLabel' },
+                { ...bi('المجموع الفرعي', 'Subtotal'), alignment: 'right', style: 'totalLabel' },
               ],
               [
                 { text: money(data.vatAmount ?? 0), alignment: 'left', style: 'td' },
                 {
-                  text: bi(`ض.ق.م (${data.vatPercent ?? 0}%)`, 'VAT'),
+                  ...bi(`الضريبة ${data.vatPercent ?? 0}%`, 'VAT'),
                   alignment: 'right',
                   style: 'totalLabel',
                 },
               ],
               [
                 { text: money(data.total), alignment: 'left', style: 'grandValue' },
-                { text: bi('الإجمالي', 'Total'), alignment: 'right', style: 'grandLabel' },
+                { ...bi('الإجمالي', 'Total'), alignment: 'right', style: 'grandLabel' },
               ],
             ],
           },
@@ -320,7 +334,7 @@ function buildDocDefinition(data: DocData) {
         {
           width: '*',
           stack: [
-            { text: bi('الإجمالي كتابةً', 'Amount in words'), style: 'sectionLabel', alignment: 'right' },
+            { ...bi('الإجمالي كتابةً', 'Amount in words'), style: 'sectionLabel', alignment: 'right' },
             { text: ar(amountInWordsSDG(data.total)), style: 'words', alignment: 'right' },
             ...(data.fxRate
               ? [
@@ -352,7 +366,7 @@ function buildDocDefinition(data: DocData) {
     content.push({
       margin: [0, 12, 0, 0],
       stack: [
-        { text: bi('الشروط والأحكام', 'Terms'), style: 'sectionLabel', alignment: 'right' },
+        { ...bi('الشروط والأحكام', 'Terms'), style: 'sectionLabel', alignment: 'right' },
         { text: ar(data.terms), style: 'partyLine', alignment: 'right' },
       ],
     })
@@ -361,7 +375,7 @@ function buildDocDefinition(data: DocData) {
     content.push({
       margin: [0, 10, 0, 0],
       stack: [
-        { text: bi('ملاحظات', 'Notes'), style: 'sectionLabel', alignment: 'right' },
+        { ...bi('ملاحظات', 'Notes'), style: 'sectionLabel', alignment: 'right' },
         { text: ar(data.notes), style: 'partyLine', alignment: 'right' },
       ],
     })
@@ -382,7 +396,7 @@ function buildDocDefinition(data: DocData) {
   return {
     pageSize: 'A4',
     pageMargins: [40, 40, 40, 60] as [number, number, number, number],
-    defaultStyle: { font: 'Cairo', fontSize: 9, color: INK },
+    defaultStyle: { font: 'Amiri', fontSize: 10, color: INK },
     content,
     footer: (currentPage: number, pageCount: number) => ({
       margin: [40, 10, 40, 0] as [number, number, number, number],
@@ -412,13 +426,14 @@ function buildDocDefinition(data: DocData) {
       grandValue: { fontSize: 11, bold: true, color: '#ffffff' },
       words: { fontSize: 9, bold: true },
       validityNote: { fontSize: 8, color: GOLD, bold: true },
+      labelEn: { fontSize: 6.5, color: MUTED },
       metaKey: { fontSize: 6.5, color: MUTED },
       metaValue: { fontSize: 10, bold: true },
     },
   }
 }
 
-function metaBox(label: string, value: string) {
+function metaBox(label: ReturnType<typeof bi>, value: string) {
   return {
     width: 'auto',
     table: {
@@ -427,7 +442,7 @@ function metaBox(label: string, value: string) {
         [
           {
             stack: [
-              { text: label, style: 'metaKey', alignment: 'center' },
+              { ...label, style: 'metaKey', alignment: 'center' },
               { text: value, style: 'metaValue', alignment: 'center' },
             ],
             margin: [10, 4, 10, 4],
@@ -443,12 +458,12 @@ function metaBox(label: string, value: string) {
   }
 }
 
-function signatureBlock(label: string) {
+function signatureBlock(label: ReturnType<typeof bi>) {
   return {
     width: '*',
     stack: [
       { canvas: [{ type: 'line', x1: 0, y1: 30, x2: 220, y2: 30, lineWidth: 1, lineColor: INK }] },
-      { text: label, alignment: 'center', fontSize: 8, color: MUTED, margin: [0, 6, 0, 0] },
+      { ...label, alignment: 'center', fontSize: 8, color: MUTED, margin: [0, 6, 0, 0] },
     ],
   }
 }
@@ -457,6 +472,8 @@ function signatureBlock(label: string) {
 /* Public API                                                          */
 /* ------------------------------------------------------------------ */
 
+let registered = false
+
 async function createPdf(data: DocData) {
   // pdfmake (~1MB) is pulled in only when a document is actually generated.
   const [{ default: pdfMake }, vfs] = await Promise.all([
@@ -464,17 +481,22 @@ async function createPdf(data: DocData) {
     loadFonts(),
   ])
 
-  const fonts = {
-    Cairo: {
-      normal: 'Cairo-Regular.ttf',
-      bold: 'Cairo-Bold.ttf',
-      italics: 'Cairo-Regular.ttf',
-      bolditalics: 'Cairo-Bold.ttf',
-    },
+  // Register once per session: the virtual file system holding the TTF bytes,
+  // and a font map that REPLACES pdfmake's Latin-only Roboto default.
+  if (!registered) {
+    pdfMake.addVirtualFileSystem(vfs)
+    pdfMake.setFonts({
+      Amiri: {
+        normal: 'Amiri-Regular.ttf',
+        bold: 'Amiri-Bold.ttf',
+        italics: 'Amiri-Regular.ttf',
+        bolditalics: 'Amiri-Bold.ttf',
+      },
+    })
+    registered = true
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (pdfMake as any).createPdf(buildDocDefinition(data), null, fonts, vfs)
+  return pdfMake.createPdf(buildDocDefinition(data))
 }
 
 export function documentFileName(data: DocData): string {
@@ -489,16 +511,16 @@ export function documentFileName(data: DocData): string {
 
 export async function downloadDocument(data: DocData): Promise<void> {
   const pdf = await createPdf(data)
-  pdf.download(documentFileName(data))
+  await pdf.download(documentFileName(data))
 }
 
 export async function openDocument(data: DocData): Promise<void> {
   const pdf = await createPdf(data)
-  pdf.open()
+  await pdf.open()
 }
 
 /** Used by the automated rendering check. */
 export async function documentAsDataUrl(data: DocData): Promise<string> {
   const pdf = await createPdf(data)
-  return new Promise<string>((resolve) => pdf.getDataUrl((url: string) => resolve(url)))
+  return pdf.getDataUrl()
 }

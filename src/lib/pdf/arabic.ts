@@ -1,60 +1,34 @@
-import ArabicReshaper from 'arabic-reshaper'
-import bidiFactory from 'bidi-js'
-
-const bidi = bidiFactory()
-
-const ARABIC_RANGE = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/
-
-export function hasArabic(text: string): boolean {
-  return ARABIC_RANGE.test(text)
-}
-
 /**
- * PDF renderers draw glyphs in the order they are given and do not perform
- * Arabic shaping or bidirectional reordering. Text handed to pdfmake must
- * therefore be pre-processed twice:
+ * Arabic text handling for generated PDFs.
  *
- *   1. SHAPE  — map each letter to its contextual presentation form
- *               (isolated / initial / medial / final) so letters connect.
- *   2. REORDER — apply the Unicode bidi algorithm and emit the characters in
- *               visual order, right-to-left, with mirrored brackets.
+ * The usual advice is to pre-process Arabic before handing it to a PDF
+ * library: map every letter to its contextual presentation form
+ * (U+FE70–U+FEFF) and reorder the string visually with the bidi algorithm.
+ * That advice does not apply here, and following it actively breaks output.
  *
- * Latin runs and digits inside the string keep their left-to-right order,
- * which is what the bidi pass is for. A string with no Arabic is returned
- * untouched.
+ * pdfmake 0.3 renders through pdfkit, which lays text out with fontkit —
+ * and fontkit runs a full OpenType shaping engine. Given the original
+ * Unicode it applies the font's GSUB rules (init/medi/fina/isol), joins the
+ * letters, and reverses the glyph order for right-to-left runs while
+ * leaving embedded digits and Latin left-to-right.
+ *
+ * Measured on the real pipeline (see git history for the harness):
+ *
+ *   raw text        → correct joining, correct word order, and the PDF keeps
+ *                     real Unicode, so the document stays searchable and
+ *                     copy-pasteable.
+ *   bidi reorder    → fontkit then shapes a reversed string and produces the
+ *                     wrong contextual forms.
+ *   reshaped        → depends on the font shipping the legacy presentation
+ *                     forms. Cairo is missing U+FE8D (isolated alef), which
+ *                     came out as U+0000 (.notdef) in the content stream.
+ *
+ * So text is passed through untouched. This wrapper is kept as the single
+ * seam where that decision lives, and to document why it is a no-op.
  */
 export function shapeArabic(input: string): string {
-  if (!input) return ''
-  if (!hasArabic(input)) return input
-
-  const shaped = ArabicReshaper.convertArabic(input)
-
-  // Bidi works per paragraph; keep explicit line breaks intact.
-  return shaped
-    .split('\n')
-    .map((line) => reorderVisually(line))
-    .join('\n')
+  return input ?? ''
 }
 
-function reorderVisually(line: string): string {
-  if (!line) return ''
-
-  // baseDirection 'rtl': the paragraph is Arabic, so the base level is 1.
-  const embeddingLevels = bidi.getEmbeddingLevels(line, 'rtl')
-  const flips = bidi.getReorderSegments(line, embeddingLevels)
-
-  const chars = Array.from(line)
-  for (const [start, end] of flips) {
-    const slice = chars.slice(start, end + 1).reverse()
-    for (let i = 0; i < slice.length; i++) chars[start + i] = slice[i]
-  }
-
-  // Mirror paired punctuation (parentheses, brackets) inside RTL runs.
-  const mirrored = bidi.getMirroredCharactersMap(line, embeddingLevels)
-  for (const [index, ch] of mirrored) chars[index] = ch
-
-  return chars.join('')
-}
-
-/** Convenience for building pdfmake tables where every cell needs shaping. */
+/** Alias used throughout the document templates. */
 export const ar = shapeArabic
