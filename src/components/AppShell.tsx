@@ -57,16 +57,18 @@ export default function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-canvas">
+      {/* Dark ink on amber, not white: white on amber-500 measures ~2.1:1 and
+          this strip carries the one message a user must not miss. */}
       {!online && (
-        <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-sm font-semibold text-white">
+        <div className="flex items-center justify-center gap-2 bg-status-warning px-4 py-2 text-sm font-bold text-[#4a3400]">
           <WifiOff size={16} />
           {t('offline')}
           {queue.count > 0 && <span>· {t('queued_count', { n: queue.count })}</span>}
         </div>
       )}
       {online && queue.flushing && (
-        <div className="bg-primary-600 px-4 py-2 text-center text-sm font-semibold text-white">
+        <div className="bg-primary-700 px-4 py-2 text-center text-sm font-semibold text-white">
           {t('sending_queued')}
         </div>
       )}
@@ -75,7 +77,7 @@ export default function AppShell() {
         {/* Sidebar — desktop only */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-e border-line bg-white md:flex">
           <div className="flex items-center gap-2.5 border-b border-line px-4 py-4">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary-600 text-sm font-extrabold text-white">
+            <div className="bg-brand-gradient grid h-9 w-9 place-items-center rounded-xl text-sm font-extrabold text-white shadow-sm">
               ز
             </div>
             <div className="leading-tight">
@@ -88,14 +90,13 @@ export default function AppShell() {
             {customerNav.map((item) => (
               <SideLink key={item.to} {...item} />
             ))}
+            <NavGroup>{t('nav_documents')}</NavGroup>
             {secondaryNav.map((item) => (
               <SideLink key={item.to} {...item} />
             ))}
             {isStaff && (
               <>
-                <div className="px-3 pb-1 pt-5 text-[11px] font-bold uppercase tracking-wide text-muted">
-                  {t('nav_admin')}
-                </div>
+                <NavGroup>{t('nav_admin')}</NavGroup>
                 {staffNav.map((item) => (
                   <SideLink key={item.to} {...item} />
                 ))}
@@ -103,20 +104,25 @@ export default function AppShell() {
             )}
           </nav>
 
-          <div className="border-t border-line p-3">
-            <div className="truncate px-1 text-xs font-semibold text-ink">
-              {profile?.full_name ?? '—'}
+          <div className="flex items-center gap-2.5 border-t border-line p-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-50 text-xs font-extrabold text-primary-700">
+              {initials(profile?.full_name)}
             </div>
-            <div className="truncate px-1 text-[11px] text-muted">
-              {company ? pick(company.name_ar, company.name_en) : t('nav_admin')}
+            <div className="min-w-0 leading-tight">
+              <div className="truncate text-xs font-semibold text-ink">
+                {profile?.full_name ?? '—'}
+              </div>
+              <div className="truncate text-[11px] text-muted">
+                {company ? pick(company.name_ar, company.name_en) : t('nav_admin')}
+              </div>
             </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b border-line bg-white px-4">
+          <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b border-line bg-white/85 px-4 backdrop-blur">
             <div className="flex items-center gap-2 md:hidden">
-              <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-600 text-xs font-extrabold text-white">
+              <div className="bg-brand-gradient grid h-8 w-8 place-items-center rounded-lg text-xs font-extrabold text-white">
                 ز
               </div>
               <span className="text-sm font-extrabold text-ink">{t('brand')}</span>
@@ -182,6 +188,21 @@ export default function AppShell() {
   )
 }
 
+function NavGroup({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-3 pb-1 pt-5 text-[11px] font-bold uppercase tracking-wide text-muted">
+      {children}
+    </div>
+  )
+}
+
+/** First letters of the first two words — works for Arabic and Latin names alike. */
+function initials(name: string | null | undefined) {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '—'
+  return parts.slice(0, 2).map((p) => [...p][0]).join('')
+}
+
 function SideLink({
   to,
   label,
@@ -199,8 +220,10 @@ function SideLink({
       end={to === '/admin'}
       className={({ isActive }) =>
         clsx(
-          'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors',
-          isActive ? 'bg-primary-50 text-primary-700' : 'text-muted hover:bg-slate-50 hover:text-ink',
+          'relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors',
+          isActive
+            ? 'bg-primary-50 text-primary-700'
+            : 'text-muted hover:bg-canvas hover:text-ink',
         )
       }
     >

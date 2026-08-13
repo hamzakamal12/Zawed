@@ -56,9 +56,9 @@ function RequireStaff() {
 function FullScreenLoading() {
   const { t } = useI18n()
   return (
-    <div className="grid min-h-screen place-items-center bg-slate-50">
+    <div className="grid min-h-screen place-items-center bg-canvas">
       <div className="flex flex-col items-center gap-3">
-        <div className="grid h-12 w-12 animate-pulse place-items-center rounded-xl bg-primary-600 text-lg font-extrabold text-white">
+        <div className="grid h-12 w-12 bg-brand-gradient animate-pulse place-items-center rounded-xl text-lg font-extrabold text-white">
           ز
         </div>
         <span className="text-sm text-muted">{t('loading')}</span>
@@ -70,8 +70,8 @@ function FullScreenLoading() {
 /** Shown when .env is missing, instead of a blank crash. */
 function SetupNotice() {
   return (
-    <div className="grid min-h-screen place-items-center bg-slate-50 p-6" dir="ltr">
-      <div className="max-w-md rounded-xl border border-amber-300 bg-amber-50 p-6 text-sm text-amber-900">
+    <div className="grid min-h-screen place-items-center bg-canvas p-6" dir="ltr">
+      <div className="max-w-md rounded-xl border border-status-warning/45 bg-status-warning/12 p-6 text-sm text-[#8a5d00]">
         <h1 className="mb-2 text-lg font-extrabold">Supabase is not configured</h1>
         <p>
           Copy <code className="rounded bg-white px-1">.env.example</code> to{' '}

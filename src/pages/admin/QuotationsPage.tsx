@@ -20,6 +20,7 @@ import {
   EmptyState,
   Input,
   Label,
+  Notice,
   QtyStepper,
   Select,
   Skeleton,
@@ -196,12 +197,12 @@ function QuotationCard({
         )}
 
         {converted && (
-          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+          <Notice tone="success">
             {t('converted')} — {converted}
-          </p>
+          </Notice>
         )}
         {error && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
+          <Notice tone="danger">{error}</Notice>
         )}
       </CardBody>
     </Card>
@@ -349,7 +350,7 @@ function QuotationBuilder({ onDone }: { onDone: () => void }) {
                     <button
                       type="button"
                       onClick={() => setLines((prev) => prev.filter((x) => x.productId !== l.productId))}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-status-critical hover:brightness-90"
                       aria-label={t('remove')}
                     >
                       <Trash2 size={15} />
@@ -372,11 +373,11 @@ function QuotationBuilder({ onDone }: { onDone: () => void }) {
           </div>
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+        {error && <Notice tone="danger">{error}</Notice>}
         {done && (
-          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+          <Notice tone="success">
             {t('quote_created')} — {done}
-          </p>
+          </Notice>
         )}
 
         <Button

@@ -15,8 +15,11 @@ type Size = 'sm' | 'md' | 'lg'
 const variants: Record<Variant, string> = {
   // 700, not 600: white-on-600 measures 4.15:1, under the 4.5 AA floor for
   // text this size. 700 gets it to 6.08:1.
+  // Disabled goes to a tinted fill with muted ink rather than a pale brand
+  // fill: white on primary-300 is 1.75:1, which erases the label entirely.
   primary:
-    'bg-primary-700 text-white shadow-sm hover:bg-primary-800 active:bg-primary-900 disabled:bg-primary-300',
+    'bg-primary-700 text-white shadow-sm hover:bg-primary-800 active:bg-primary-900 ' +
+    'disabled:bg-primary-50 disabled:text-muted disabled:shadow-none',
   accent:
     'bg-accent-500 text-white shadow-sm hover:bg-accent-600 active:bg-accent-700 disabled:opacity-50',
   outline:
@@ -177,6 +180,48 @@ export function EmptyState({
       <p className="font-semibold text-ink">{title}</p>
       {hint && <p className="-mt-2 text-sm text-muted">{hint}</p>}
       {action}
+    </div>
+  )
+}
+
+/**
+ * Inline banner for a message about the state of things — stale FX, a failed
+ * save, a confirmation. Every screen had been hand-rolling this out of raw
+ * Tailwind palette classes — raw amber/red/emerald steps — which is how they
+ * drifted off the design tokens and out of contrast range.
+ * The dark text shades are the same ones Badge uses, chosen to clear AA
+ * against their own tinted backgrounds.
+ */
+type NoticeTone = 'info' | 'success' | 'warning' | 'danger'
+
+const noticeTones: Record<NoticeTone, string> = {
+  info: 'border-primary-200 bg-primary-50 text-primary-800',
+  success: 'border-status-good/30 bg-status-good/8 text-[#0a7a0a]',
+  warning: 'border-status-warning/45 bg-status-warning/12 text-[#8a5d00]',
+  danger: 'border-status-critical/30 bg-status-critical/8 text-[#a52c2c]',
+}
+
+export function Notice({
+  tone = 'info',
+  icon,
+  children,
+  className,
+}: {
+  tone?: NoticeTone
+  icon?: ReactNode
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div
+      className={clsx(
+        'flex items-start gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold',
+        noticeTones[tone],
+        className,
+      )}
+    >
+      {icon && <span className="mt-px shrink-0">{icon}</span>}
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   )
 }

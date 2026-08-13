@@ -81,7 +81,7 @@ export default function LoginPage() {
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-8 flex items-center justify-between lg:justify-end">
             <div className="flex items-center gap-2.5 lg:hidden">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary-600 text-lg font-extrabold text-white">
+              <div className="grid h-11 w-11 bg-brand-gradient place-items-center rounded-xl text-lg font-extrabold text-white">
                 ز
               </div>
               <div className="leading-tight">

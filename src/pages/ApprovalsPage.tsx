@@ -3,7 +3,7 @@ import { CheckCircle2, Inbox, XCircle } from 'lucide-react'
 import { useDecideApproval, usePendingApprovals } from '@/hooks/documents'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDate, formatSDG } from '@/lib/format'
-import { Badge, Button, Card, CardBody, EmptyState, Input, Skeleton } from '@/components/ui'
+import { Badge, Button, Card, CardBody, EmptyState, Input, Notice, Skeleton } from '@/components/ui'
 
 export default function ApprovalsPage() {
   const { t, pick, lang } = useI18n()
@@ -41,7 +41,7 @@ export default function ApprovalsPage() {
         <p className="mt-1 text-sm text-muted">{t('awaiting_your_approval')}</p>
       </div>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+      {error && <Notice tone="danger">{error}</Notice>}
 
       {rows.length === 0 ? (
         <EmptyState icon={<Inbox size={40} />} title={t('approvals_empty')} />
@@ -80,7 +80,7 @@ export default function ApprovalsPage() {
                 </ul>
 
                 {order.notes && (
-                  <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-muted">{order.notes}</p>
+                  <p className="rounded-lg bg-canvas px-3 py-2 text-sm text-muted">{order.notes}</p>
                 )}
 
                 <div className="flex flex-wrap items-center gap-2">

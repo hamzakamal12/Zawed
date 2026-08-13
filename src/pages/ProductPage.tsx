@@ -201,7 +201,7 @@ export default function ProductPage() {
 
 function Spec({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-slate-50 px-3 py-2">
+    <div className="rounded-lg bg-canvas px-3 py-2">
       <dt className="text-[11px] text-muted">{label}</dt>
       <dd className="font-semibold text-ink">{value}</dd>
     </div>

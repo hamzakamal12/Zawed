@@ -19,6 +19,7 @@ import {
   EmptyState,
   Input,
   Label,
+  Notice,
   QtyStepper,
   Select,
   Skeleton,
@@ -66,7 +67,7 @@ export default function RecurringPage() {
 
       {creating && <RecurringBuilder onDone={() => setCreating(false)} />}
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+      {error && <Notice tone="danger">{error}</Notice>}
 
       {lists.isLoading ? (
         <div className="space-y-2">
@@ -236,7 +237,7 @@ function RecurringBuilder({ onDone }: { onDone: () => void }) {
                     <button
                       type="button"
                       onClick={() => setLines((prev) => prev.filter((x) => x.productId !== l.productId))}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-status-critical hover:brightness-90"
                       aria-label={t('remove')}
                     >
                       <Trash2 size={15} />
@@ -248,7 +249,7 @@ function RecurringBuilder({ onDone }: { onDone: () => void }) {
           </ul>
         )}
 
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+        {error && <Notice tone="danger">{error}</Notice>}
 
         <Button onClick={submit} disabled={!name || lines.length === 0 || save.isPending} size="lg">
           {save.isPending ? t('creating') : t('save')}

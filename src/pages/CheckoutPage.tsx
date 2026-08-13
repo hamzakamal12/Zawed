@@ -7,7 +7,7 @@ import { usePlaceOrder } from '@/hooks/queries'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { enqueueOrder } from '@/lib/orderQueue'
 import { useI18n } from '@/i18n/I18nProvider'
-import { Button, Card, CardBody, CardTitle, Input, Label, Textarea } from '@/components/ui'
+import { Button, Card, CardBody, CardTitle, Input, Label, Notice, Textarea } from '@/components/ui'
 
 export default function CheckoutPage() {
   const { t } = useI18n()
@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   if (queued) {
     return (
       <div className="mx-auto max-w-md py-10 text-center">
-        <CheckCircle2 size={56} className="mx-auto text-amber-500" />
+        <CheckCircle2 size={56} className="mx-auto text-status-warning" />
         <h1 className="mt-4 text-xl font-extrabold text-ink">{t('queued_offline')}</h1>
         <div className="mt-6 flex justify-center gap-2">
           <Button onClick={() => navigate('/orders')}>{t('orders_title')}</Button>
@@ -49,7 +49,7 @@ export default function CheckoutPage() {
     const result = placeOrder.data
     return (
       <div className="mx-auto max-w-md py-10 text-center">
-        <CheckCircle2 size={56} className="mx-auto text-emerald-600" />
+        <CheckCircle2 size={56} className="mx-auto text-status-good" />
         <h1 className="mt-4 text-xl font-extrabold text-ink">{t('order_placed')}</h1>
         <p className="mt-2 text-sm text-muted">{t('order_placed_note')}</p>
         <p className="mt-3 font-mono text-lg font-bold text-primary-700">{result.order_number}</p>
@@ -139,9 +139,7 @@ export default function CheckoutPage() {
             </div>
 
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                {error}
-              </div>
+              <Notice tone="danger">{error}</Notice>
             )}
 
             <Button type="submit" size="lg" className="w-full" disabled={placeOrder.isPending}>

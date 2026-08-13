@@ -3,7 +3,7 @@ import { AlertTriangle, Coins, PackageX, ShoppingBag, Clock } from 'lucide-react
 import { useAdminOrders, useCurrentFx, useInventory, useProducts } from '@/hooks/queries'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDate, formatNumber, formatSDG, hoursSince } from '@/lib/format'
-import { Badge, Card, CardBody, CardTitle, Skeleton } from '@/components/ui'
+import { Badge, Card, CardBody, CardTitle, Notice, Skeleton, StatTile } from '@/components/ui'
 import OrderStatusBadge from '@/components/OrderStatusBadge'
 
 export default function AdminDashboard() {
@@ -27,44 +27,45 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-extrabold text-ink">{t('admin_title')}</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-ink">{t('admin_title')}</h1>
 
       {fxStale && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
-          <AlertTriangle size={18} className="mt-px shrink-0" />
-          <div className="flex-1">
-            {t('fx_stale_warning')}
-            <Link to="/admin/fx" className="ms-2 underline">
-              {t('fx_title')}
-            </Link>
-          </div>
-        </div>
+        <Notice tone="warning" icon={<AlertTriangle size={18} />}>
+          {t('fx_stale_warning')}
+          <Link to="/admin/fx" className="ms-2 underline">
+            {t('fx_title')}
+          </Link>
+        </Notice>
       )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
+        <StatTile
           icon={<ShoppingBag size={18} />}
           label={t('today_orders')}
-          value={orders.isLoading ? null : formatNumber(todayCount)}
+          value={formatNumber(todayCount)}
+          loading={orders.isLoading}
         />
-        <Stat
+        <StatTile
           icon={<Clock size={18} />}
           label={t('pending_orders')}
-          value={orders.isLoading ? null : formatNumber(pendingCount)}
-          tone={pendingCount > 0 ? 'warning' : undefined}
+          value={formatNumber(pendingCount)}
+          loading={orders.isLoading}
+          tone={pendingCount > 0 ? 'warning' : 'default'}
         />
-        <Stat
+        <StatTile
           icon={<PackageX size={18} />}
           label={t('low_stock_items')}
-          value={inventory.isLoading ? null : formatNumber(lowStock.length)}
-          tone={lowStock.length > 0 ? 'danger' : undefined}
+          value={formatNumber(lowStock.length)}
+          loading={inventory.isLoading}
+          tone={lowStock.length > 0 ? 'critical' : 'default'}
         />
-        <Stat
+        <StatTile
           icon={<Coins size={18} />}
           label={t('current_fx')}
-          value={fx.isLoading ? null : `${formatNumber(fx.data?.rate_sdg_per_usd ?? null)} ج.س`}
+          value={`${formatNumber(fx.data?.rate_sdg_per_usd ?? null)} ج.س`}
           hint={fxAge != null ? t('fx_updated_ago', { h: Math.floor(fxAge) }) : undefined}
-          tone={fxStale ? 'warning' : undefined}
+          loading={fx.isLoading}
+          tone={fxStale ? 'warning' : 'brand'}
         />
       </div>
 
@@ -88,8 +89,8 @@ export default function AdminDashboard() {
             ) : (
               <ul className="divide-y divide-line">
                 {rows.slice(0, 6).map((o) => (
-                  <li key={o.id} className="flex items-center justify-between gap-3 py-2.5">
-                    <div className="min-w-0">
+                  <li key={o.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2.5">
+                    <div className="min-w-0 flex-1">
                       <Link
                         to={`/orders/${o.id}`}
                         className="font-mono text-sm font-bold text-ink hover:text-primary-700"
@@ -97,12 +98,17 @@ export default function AdminDashboard() {
                         {o.order_number}
                       </Link>
                       <div className="truncate text-[11px] text-muted">
-                        {o.companies ? pick(o.companies.name_ar, o.companies.name_en) : '—'} ·{' '}
-                        {formatDate(o.created_at, lang)}
+                        {/* dir=auto isolates the name: a company with only an
+                            Arabic name sits inside an English line otherwise,
+                            and bidi splits the date around it ("13 …‎ Aug 2026"). */}
+                        <span dir="auto">
+                          {o.companies ? pick(o.companies.name_ar, o.companies.name_en) : '—'}
+                        </span>{' '}
+                        · {formatDate(o.created_at, lang)}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold tabular-nums">
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="whitespace-nowrap text-sm font-semibold tabular-nums">
                         {formatSDG(o.total)}
                       </span>
                       <OrderStatusBadge status={o.status} />
@@ -124,7 +130,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : lowStock.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted">✓</p>
+              <p className="py-8 text-center text-sm text-muted">{t('no_low_stock')}</p>
             ) : (
               <ul className="divide-y divide-line">
                 {lowStock.slice(0, 8).map((i) => {
@@ -132,14 +138,20 @@ export default function AdminDashboard() {
                   const available = i.qty_on_hand - i.qty_reserved
                   return (
                     <li key={i.product_id} className="flex items-center justify-between gap-3 py-2.5">
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-semibold text-ink">
                           {product ? pick(product.name_ar, product.name_en) : i.product_id}
                         </div>
                         <div className="font-mono text-[11px] text-muted">{product?.sku}</div>
                       </div>
+                      {/* dir=ltr is load-bearing: in an RTL paragraph the bidi
+                          algorithm treats the slash between two numbers as RTL
+                          and swaps them, so "0 / 20" renders as "20 / 0" — i.e.
+                          the dashboard reports stock backwards. */}
                       <Badge tone={available <= 0 ? 'danger' : 'warning'}>
-                        {formatNumber(available)} / {formatNumber(i.reorder_point)}
+                        <span dir="ltr">
+                          {formatNumber(available)} / {formatNumber(i.reorder_point)}
+                        </span>
                       </Badge>
                     </li>
                   )
@@ -153,43 +165,3 @@ export default function AdminDashboard() {
   )
 }
 
-function Stat({
-  icon,
-  label,
-  value,
-  hint,
-  tone,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string | null
-  hint?: string
-  tone?: 'warning' | 'danger'
-}) {
-  return (
-    <Card>
-      <CardBody>
-        <div className="flex items-center gap-1.5 text-muted">
-          {icon}
-          <span className="text-[11px] font-semibold leading-tight">{label}</span>
-        </div>
-        {value === null ? (
-          <Skeleton className="mt-2 h-7 w-20" />
-        ) : (
-          <div
-            className={
-              tone === 'danger'
-                ? 'mt-1 text-xl font-extrabold text-red-600'
-                : tone === 'warning'
-                  ? 'mt-1 text-xl font-extrabold text-amber-600'
-                  : 'mt-1 text-xl font-extrabold text-ink'
-            }
-          >
-            {value}
-          </div>
-        )}
-        {hint && <div className="mt-0.5 text-[11px] text-muted">{hint}</div>}
-      </CardBody>
-    </Card>
-  )
-}

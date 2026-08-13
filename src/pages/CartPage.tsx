@@ -105,7 +105,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => remove(line.productId)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-status-critical hover:brightness-90"
                     >
                       <Trash2 size={13} />
                       {t('remove')}

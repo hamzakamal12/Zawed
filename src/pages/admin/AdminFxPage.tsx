@@ -3,7 +3,18 @@ import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useCurrentFx, useFxHistory, useSetFxRate } from '@/hooks/queries'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDateTime, formatNumber, hoursSince } from '@/lib/format'
-import { Badge, Button, Card, CardBody, CardTitle, Input, Label, Select, Skeleton } from '@/components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardTitle,
+  Input,
+  Label,
+  Notice,
+  Select,
+  Skeleton,
+} from '@/components/ui'
 import type { FxSource } from '@/lib/database.types'
 
 export default function AdminFxPage() {
@@ -43,15 +54,12 @@ export default function AdminFxPage() {
       </header>
 
       {stale && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
-          <AlertTriangle size={18} className="mt-px shrink-0" />
-          {t('fx_stale_warning')}
-        </div>
+        <Notice tone="warning" icon={<AlertTriangle size={18} />}>{t('fx_stale_warning')}</Notice>
       )}
 
       <Card>
         <CardBody>
-          <div className="mb-4 rounded-xl bg-primary-600 p-5 text-center text-white">
+          <div className="mb-4 rounded-xl bg-primary-700 p-5 text-center text-white">
             <div className="text-xs font-semibold opacity-90">{t('current_fx')}</div>
             {current.isLoading ? (
               <Skeleton className="mx-auto mt-2 h-10 w-40 bg-white/30" />
@@ -96,10 +104,9 @@ export default function AdminFxPage() {
             </div>
 
             {done && (
-              <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
-                <CheckCircle2 size={16} />
+              <Notice tone="success" icon={<CheckCircle2 size={16} />}>
                 {t('fx_saved')}
-              </div>
+              </Notice>
             )}
 
             <Button type="submit" size="lg" className="w-full" disabled={save.isPending}>

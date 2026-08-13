@@ -1,7 +1,7 @@
 import { useReports } from '@/hooks/documents'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatNumber, formatSDG, formatUSD } from '@/lib/format'
-import { Card, CardBody, CardTitle, Skeleton } from '@/components/ui'
+import { Card, CardBody, CardTitle, Meter, Skeleton } from '@/components/ui'
 
 export default function ReportsPage() {
   const { t, pick, lang } = useI18n()
@@ -53,11 +53,8 @@ export default function ReportsPage() {
                         </span>
                       </span>
                     </div>
-                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-primary-600"
-                        style={{ width: `${(Number(r.revenue_sdg) / maxRevenue) * 100}%` }}
-                      />
+                    <div className="mt-1">
+                      <Meter percent={(Number(r.revenue_sdg) / maxRevenue) * 100} />
                     </div>
                   </li>
                 ))}
@@ -162,17 +159,24 @@ export default function ReportsPage() {
                     key={a.bucket}
                     className={
                       late
-                        ? 'rounded-xl border border-red-200 bg-red-50 p-3'
-                        : 'rounded-xl border border-line bg-slate-50 p-3'
+                        ? 'rounded-xl border border-status-critical/30 bg-status-critical/8 p-3'
+                        : 'rounded-xl border border-line bg-canvas p-3'
                     }
                   >
                     <div className="text-[11px] font-semibold text-muted">
-                      {a.bucket === 'current' ? t('is_unpaid') : `${a.bucket} ${t('days')}`}
+                      {a.bucket === 'current' ? (
+                        t('is_unpaid')
+                      ) : (
+                        <>
+                          {/* Isolated: bare "90+" flips to "+90" in an RTL run. */}
+                          <span dir="ltr">{a.bucket}</span> {t('days')}
+                        </>
+                      )}
                     </div>
                     <div
                       className={
                         late
-                          ? 'mt-1 text-base font-extrabold text-red-700'
+                          ? 'mt-1 text-base font-extrabold text-[#a52c2c]'
                           : 'mt-1 text-base font-extrabold text-ink'
                       }
                     >

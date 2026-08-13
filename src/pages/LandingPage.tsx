@@ -62,7 +62,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 border-b border-line/70 bg-white/85 backdrop-blur">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-600 font-extrabold text-white">
+            <div className="grid h-10 w-10 bg-brand-gradient place-items-center rounded-xl font-extrabold text-white">
               ز
             </div>
             <div className="leading-tight">
@@ -213,7 +213,7 @@ export default function LandingPage() {
               ['lp_how_3_t', 'lp_how_3_b'],
             ].map(([title, body], i) => (
               <li key={title} className="relative rounded-2xl border border-line bg-white p-6 shadow-card">
-                <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-600 text-sm font-extrabold text-white">
+                <span className="grid h-9 w-9 bg-brand-gradient place-items-center rounded-lg text-sm font-extrabold text-white">
                   {i + 1}
                 </span>
                 <h3 className="mt-4 font-bold text-ink">{t(title as StringKey)}</h3>
@@ -271,7 +271,7 @@ export default function LandingPage() {
       <footer className="border-t border-line bg-canvas py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 text-sm text-muted sm:flex-row sm:px-6">
           <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-lg bg-primary-600 text-xs font-extrabold text-white">
+            <div className="grid h-7 w-7 bg-brand-gradient place-items-center rounded-lg text-xs font-extrabold text-white">
               ز
             </div>
             <span className="font-semibold text-ink">{t('brand')}</span>
