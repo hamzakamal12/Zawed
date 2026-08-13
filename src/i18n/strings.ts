@@ -14,6 +14,11 @@ export const strings = {
     nav_dashboard: 'لوحة التحكم',
 
     // auth
+    auth_headline: 'توريد مكتبك، بسعر يواكب السوق',
+    auth_sub: 'أسعار تُحدَّث مع سعر الصرف لحظياً، طلبات موثّقة، وفواتير جاهزة — مصمَّمة للمنظمات والشركات في السودان.',
+    auth_point_pricing: 'أسعار محسوبة لحظياً حسب سعر الصرف',
+    auth_point_orders: 'طلبات وموافقات وأوامر شراء موثّقة',
+    auth_point_docs: 'عروض أسعار وفواتير PDF بالعربي',
     login_title: 'تسجيل الدخول',
     login_subtitle: 'ادخل إلى حساب شركتك لمتابعة الطلبات',
     email: 'البريد الإلكتروني',
@@ -247,6 +252,11 @@ export const strings = {
     nav_admin_fx: 'FX Rate',
     nav_dashboard: 'Dashboard',
 
+    auth_headline: 'Office supply, priced to the market',
+    auth_sub: 'Prices that track the exchange rate in real time, auditable orders, and ready invoices — built for organizations in Sudan.',
+    auth_point_pricing: 'Prices computed live from the FX rate',
+    auth_point_orders: 'Auditable orders, approvals and PO numbers',
+    auth_point_docs: 'Arabic quotations and PDF invoices',
     login_title: 'Sign in',
     login_subtitle: 'Access your company account to manage orders',
     email: 'Email',
