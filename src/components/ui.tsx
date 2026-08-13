@@ -9,17 +9,23 @@ import type {
 
 /* ---------------------------------- Button --------------------------------- */
 
-type Variant = 'primary' | 'outline' | 'ghost' | 'danger' | 'success' | 'accent'
+type Variant = 'primary' | 'outline' | 'ghost' | 'danger' | 'success' | 'accent' | 'inverse'
 type Size = 'sm' | 'md' | 'lg'
 
 const variants: Record<Variant, string> = {
+  // 700, not 600: white-on-600 measures 4.15:1, under the 4.5 AA floor for
+  // text this size. 700 gets it to 6.08:1.
   primary:
-    'bg-primary-600 text-white shadow-sm hover:bg-primary-700 active:bg-primary-800 disabled:bg-primary-300',
+    'bg-primary-700 text-white shadow-sm hover:bg-primary-800 active:bg-primary-900 disabled:bg-primary-300',
   accent:
     'bg-accent-500 text-white shadow-sm hover:bg-accent-600 active:bg-accent-700 disabled:opacity-50',
   outline:
     'border border-line bg-white text-ink hover:border-primary-300 hover:bg-primary-50 disabled:opacity-50',
   ghost: 'text-primary-700 hover:bg-primary-50 disabled:opacity-50',
+  // For sitting on a saturated brand background. It has to be a variant rather
+  // than a className override: two `text-*` utilities on one element are
+  // resolved by stylesheet order, not by which one was passed last.
+  inverse: 'bg-white text-primary-700 shadow-sm hover:bg-primary-50 active:bg-primary-100',
   danger: 'bg-status-critical text-white shadow-sm hover:brightness-95 disabled:opacity-50',
   success: 'bg-status-good text-white shadow-sm hover:brightness-95 disabled:opacity-50',
 }

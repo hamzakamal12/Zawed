@@ -6,6 +6,7 @@ import { I18nProvider, useI18n } from '@/i18n/I18nProvider'
 import { isConfigured } from '@/lib/supabase'
 import AppShell from '@/components/AppShell'
 import { Skeleton } from '@/components/ui'
+import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
 import CatalogPage from '@/pages/CatalogPage'
 import ProductPage from '@/pages/ProductPage'
@@ -99,10 +100,10 @@ export default function App() {
         <CartProvider>
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route element={<RequireAuth />}>
                 <Route element={<AppShell />}>
-                  <Route index element={<Navigate to="/catalog" replace />} />
                   <Route path="/catalog" element={<CatalogPage />} />
                   <Route path="/catalog/:id" element={<ProductPage />} />
                   <Route path="/cart" element={<CartPage />} />

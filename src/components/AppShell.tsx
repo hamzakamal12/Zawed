@@ -150,7 +150,7 @@ export default function AppShell() {
             className={({ isActive }) =>
               clsx(
                 'relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold',
-                isActive ? 'text-primary-600' : 'text-muted',
+                isActive ? 'text-primary-700' : 'text-muted',
               )
             }
           >
@@ -169,7 +169,7 @@ export default function AppShell() {
             className={({ isActive }) =>
               clsx(
                 'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold',
-                isActive ? 'text-primary-600' : 'text-muted',
+                isActive ? 'text-primary-700' : 'text-muted',
               )
             }
           >

@@ -185,7 +185,7 @@ function ProductTile({
         </div>
 
         <div className="flex flex-1 flex-col p-4 pb-3">
-          <div className="text-[11px] font-semibold text-primary-600">
+          <div className="text-[11px] font-semibold text-primary-700">
             {category ? pick(category.name_ar, category.name_en) : product.sku}
           </div>
           <h3 className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-ink">
