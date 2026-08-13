@@ -1,11 +1,15 @@
 import { useMemo, useState } from 'react'
-import { Plus, Send, ShoppingBag, Trash2, X } from 'lucide-react'
+import { FileText, Plus, Send, ShoppingBag, Trash2, X } from 'lucide-react'
 import {
   useAcceptQuotation,
   useCompanies,
   useCreateQuotation,
   useQuotations,
   useSendQuotation,
+  useClaimQuoteRequest,
+  useDeclineQuoteRequest,
+  useQuoteRequests,
+  useQuoteRequestToQuotation,
   type QuotationWithItems,
 } from '@/hooks/documents'
 import { useProducts } from '@/hooks/queries'
@@ -62,6 +66,8 @@ export default function QuotationsPage() {
       </div>
 
       {creating && <QuotationBuilder onDone={() => setCreating(false)} />}
+
+      <RequestInbox />
 
       {quotations.isLoading ? (
         <div className="space-y-2">
@@ -387,6 +393,162 @@ function QuotationBuilder({ onDone }: { onDone: () => void }) {
         >
           {create.isPending ? t('creating') : t('create')}
         </Button>
+      </CardBody>
+    </Card>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Incoming quote requests (RFQ)                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Sales' work queue, on the same screen as quotations because it IS the front
+ * of that job: an open request is a quotation that has not been written yet.
+ * Only open requests appear — closed ones live on the customer's own page.
+ */
+function RequestInbox() {
+  const { t, pick, lang } = useI18n()
+  const requests = useQuoteRequests()
+  const claim = useClaimQuoteRequest()
+  const decline = useDeclineQuoteRequest()
+  const convert = useQuoteRequestToQuotation()
+
+  const [reasonFor, setReasonFor] = useState<string | null>(null)
+  const [reason, setReason] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState<{ number: string; skipped: number } | null>(null)
+
+  const open = (requests.data ?? []).filter(
+    (r) => r.status === 'submitted' || r.status === 'in_review',
+  )
+
+  if (requests.isLoading || open.length === 0) return null
+
+  const run = async (fn: () => Promise<unknown>) => {
+    setError(null)
+    try {
+      await fn()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('error_generic'))
+    }
+  }
+
+  return (
+    <Card>
+      <CardBody className="space-y-3">
+        <CardTitle>{t('rq_inbox')}</CardTitle>
+
+        <ul className="divide-y divide-line">
+          {open.map((r) => (
+            <li key={r.id} className="space-y-2 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-sm font-bold text-ink">{r.request_number}</span>
+                    <Badge tone={r.status === 'submitted' ? 'info' : 'warning'}>
+                      {t(r.status === 'submitted' ? 'rq_submitted' : 'rq_in_review')}
+                    </Badge>
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted">
+                    <span dir="auto">
+                      {r.companies ? pick(r.companies.name_ar, r.companies.name_en) : '—'}
+                    </span>{' '}
+                    · {formatDate(r.created_at, lang)}
+                    {r.needed_by && (
+                      <>
+                        {' · '}
+                        {t('rq_needed_by')} {formatDate(r.needed_by, lang)}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {r.status === 'submitted' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => run(() => claim.mutateAsync(r.id))}
+                      disabled={claim.isPending}
+                    >
+                      {t('rq_claim')}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    disabled={convert.isPending}
+                    onClick={() =>
+                      run(async () => {
+                        const res = await convert.mutateAsync({ requestId: r.id })
+                        setDone({ number: res.quote_number, skipped: res.skipped_lines })
+                      })
+                    }
+                  >
+                    <FileText size={14} />
+                    {t('rq_make_quote')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setReasonFor(reasonFor === r.id ? null : r.id)
+                      setReason('')
+                    }}
+                  >
+                    {t('rq_decline')}
+                  </Button>
+                </div>
+              </div>
+
+              <ul className="text-sm text-muted">
+                {r.quote_request_items.map((i) => (
+                  <li key={i.id} className="flex justify-between gap-3">
+                    <span className="min-w-0 flex-1 truncate">
+                      {i.products ? pick(i.products.name_ar, i.products.name_en) : i.description}
+                      {!i.products && (
+                        <span className="ms-1 text-[11px]">({t('rq_off_catalog')})</span>
+                      )}
+                    </span>
+                    <span dir="ltr" className="shrink-0 tabular-nums">× {i.qty}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {r.notes && <p className="text-sm text-ink">{r.notes}</p>}
+
+              {reasonFor === r.id && (
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="min-w-48 flex-1">
+                    <Label>{t('rq_decline_reason')}</Label>
+                    <Input value={reason} onChange={(e) => setReason(e.target.value)} />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!reason.trim() || decline.isPending}
+                    onClick={() =>
+                      run(async () => {
+                        await decline.mutateAsync({ requestId: r.id, reason })
+                        setReasonFor(null)
+                      })
+                    }
+                  >
+                    {t('rq_decline')}
+                  </Button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {done && (
+          <Notice tone="success">
+            {t('quote_created')} — <span className="font-mono">{done.number}</span>
+            {done.skipped > 0 && <div className="mt-1 font-normal">{t('rq_skipped_note')}</div>}
+          </Notice>
+        )}
+        {error && <Notice tone="danger">{error}</Notice>}
       </CardBody>
     </Card>
   )

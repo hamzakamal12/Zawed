@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { CheckCircle2 } from 'lucide-react'
+import { CalendarClock, CheckCircle2 } from 'lucide-react'
 import { useCart } from '@/context/CartProvider'
 import { useAuth } from '@/context/AuthProvider'
 import { usePlaceOrder } from '@/hooks/queries'
@@ -137,6 +137,18 @@ export default function CheckoutPage() {
               <Label hint={t('optional')}>{t('notes')}</Label>
               <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
+
+            {/* The terms are agreed per company but were never shown back to
+                the buyer, who had no way to know whether this was cash on
+                delivery or net-30 until the invoice arrived. */}
+            {company && (
+              <Notice tone="info" icon={<CalendarClock size={16} />}>
+                {t('payment_terms')}:{' '}
+                {company.payment_terms_days > 0
+                  ? t('payment_terms_days', { d: company.payment_terms_days })
+                  : t('payment_terms_cash')}
+              </Notice>
+            )}
 
             {error && (
               <Notice tone="danger">{error}</Notice>

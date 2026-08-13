@@ -9,6 +9,7 @@ import {
   Coins,
   Package,
   WifiOff,
+  FileQuestion,
   FileText,
   Receipt,
   Repeat,
@@ -39,6 +40,7 @@ export default function AppShell() {
     { to: '/orders', label: t('nav_orders'), icon: ClipboardList },
   ]
   const secondaryNav = [
+    { to: '/quote-requests', label: t('nav_requests'), icon: FileQuestion },
     { to: '/invoices', label: t('nav_invoices'), icon: Receipt },
     { to: '/recurring', label: t('nav_recurring'), icon: Repeat },
     ...(isCompanyAdmin ? [{ to: '/approvals', label: t('nav_approvals'), icon: Inbox }] : []),
@@ -163,7 +165,7 @@ export default function AppShell() {
             <Icon size={20} />
             {label}
             {Boolean(badge) && (
-              <span className="absolute top-1 ms-6 grid h-4 min-w-4 place-items-center rounded-full bg-accent-500 px-1 text-[10px] font-bold text-white">
+              <span className="absolute top-1 ms-6 grid h-4 min-w-4 place-items-center rounded-full bg-accent-600 px-1 text-[10px] font-bold text-white">
                 {badge}
               </span>
             )}
@@ -230,7 +232,7 @@ function SideLink({
       <Icon size={18} />
       <span className="flex-1">{label}</span>
       {Boolean(badge) && (
-        <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent-500 px-1 text-[11px] font-bold text-white">
+        <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent-600 px-1 text-[11px] font-bold text-white">
           {badge}
         </span>
       )}

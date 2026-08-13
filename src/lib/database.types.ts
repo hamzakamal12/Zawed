@@ -200,6 +200,41 @@ export interface RecurringOrder {
 }
 
 /** Row shape of get_price() / get_catalog_prices(). */
+export type QuoteRequestStatus =
+  | 'submitted'
+  | 'in_review'
+  | 'quoted'
+  | 'declined'
+  | 'cancelled'
+
+export interface QuoteRequest {
+  id: string
+  request_number: string | null
+  company_id: string
+  created_by: string | null
+  status: QuoteRequestStatus
+  notes: string | null
+  needed_by: string | null
+  quotation_id: string | null
+  decline_reason: string | null
+  created_at: string
+}
+
+export interface QuoteRequestItem {
+  id: string
+  request_id: string
+  /** Null for an off-catalog ask, where `description` carries the request. */
+  product_id: string | null
+  description: string | null
+  qty: number
+  note: string | null
+}
+
+export interface QuoteRequestResult {
+  request_id: string
+  request_number: string
+}
+
 export interface PriceRow {
   product_id: string
   unit_price_sdg: number | null
@@ -233,6 +268,8 @@ export interface Database {
       invoices: { Row: Invoice; Insert: Partial<Invoice>; Update: Partial<Invoice> }
       payments: { Row: Payment; Insert: Partial<Payment>; Update: Partial<Payment> }
       recurring_orders: { Row: RecurringOrder; Insert: Partial<RecurringOrder>; Update: Partial<RecurringOrder> }
+      quote_requests: { Row: QuoteRequest; Insert: Partial<QuoteRequest>; Update: Partial<QuoteRequest> }
+      quote_request_items: { Row: QuoteRequestItem; Insert: Partial<QuoteRequestItem>; Update: Partial<QuoteRequestItem> }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

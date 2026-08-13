@@ -11,6 +11,9 @@ import type {
   QuotationItem,
   RecurringOrder,
   Product,
+  QuoteRequest,
+  QuoteRequestItem,
+  QuoteRequestResult,
 } from '@/lib/database.types'
 
 /* ------------------------------------------------------------------ */
@@ -417,5 +420,129 @@ export function useReports() {
       }
     },
     staleTime: 5 * 60_000,
+  })
+}
+
+/* ------------------------------------------------------------------ */
+/* Quote requests (RFQ) — customer-initiated                           */
+/* ------------------------------------------------------------------ */
+
+export interface QuoteRequestWithItems extends QuoteRequest {
+  companies: Pick<Company, 'name_ar' | 'name_en'> | null
+  quotations: Pick<Quotation, 'quote_number'> | null
+  quote_request_items: (QuoteRequestItem & {
+    products: Pick<Product, 'name_ar' | 'name_en' | 'sku'> | null
+  })[]
+}
+
+/**
+ * One list for both audiences: RLS narrows it to the caller's own company for
+ * customers and leaves it whole for staff, so there is no second query and no
+ * chance of the two views drifting apart.
+ */
+export function useQuoteRequests() {
+  const { session } = useAuth()
+  return useQuery({
+    queryKey: ['quote-requests', session?.user?.id],
+    enabled: Boolean(session),
+    queryFn: async (): Promise<QuoteRequestWithItems[]> => {
+      const { data, error } = await supabase
+        .from('quote_requests')
+        .select(
+          '*, companies(name_ar, name_en), quotations(quote_number), ' +
+            'quote_request_items(*, products(name_ar, name_en, sku))',
+        )
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return (data ?? []) as unknown as QuoteRequestWithItems[]
+    },
+  })
+}
+
+export interface QuoteRequestLine {
+  product_id?: string | null
+  description?: string | null
+  qty: number
+  note?: string | null
+}
+
+export function useSubmitQuoteRequest() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      items: QuoteRequestLine[]
+      notes?: string | null
+      neededBy?: string | null
+    }) => {
+      const { data, error } = await supabase.rpc('submit_quote_request', {
+        p_items: input.items,
+        p_notes: input.notes ?? null,
+        p_needed_by: input.neededBy || null,
+      })
+      if (error) throw error
+      const rows = (data ?? []) as QuoteRequestResult[]
+      if (!rows[0]) throw new Error('request failed')
+      return rows[0]
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['quote-requests'] }),
+  })
+}
+
+function useRequestAction<T>(fn: (input: T) => Promise<void>) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['quote-requests'] }),
+  })
+}
+
+export function useCancelQuoteRequest() {
+  return useRequestAction<string>(async (requestId) => {
+    const { error } = await supabase.rpc('cancel_quote_request', { p_request_id: requestId })
+    if (error) throw error
+  })
+}
+
+export function useClaimQuoteRequest() {
+  return useRequestAction<string>(async (requestId) => {
+    const { error } = await supabase.rpc('claim_quote_request', { p_request_id: requestId })
+    if (error) throw error
+  })
+}
+
+export function useDeclineQuoteRequest() {
+  return useRequestAction<{ requestId: string; reason: string }>(async ({ requestId, reason }) => {
+    const { error } = await supabase.rpc('decline_quote_request', {
+      p_request_id: requestId,
+      p_reason: reason,
+    })
+    if (error) throw error
+  })
+}
+
+export function useQuoteRequestToQuotation() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { requestId: string; vatPercent?: number; validityDays?: number }) => {
+      const { data, error } = await supabase.rpc('quote_request_to_quotation', {
+        p_request_id: input.requestId,
+        p_vat_percent: input.vatPercent ?? 0,
+        p_validity_days: input.validityDays ?? 7,
+      })
+      if (error) throw error
+      const rows = (data ?? []) as {
+        quotation_id: string
+        quote_number: string
+        total: number
+        skipped_lines: number
+      }[]
+      if (!rows[0]) throw new Error('conversion failed')
+      return rows[0]
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['quote-requests'] })
+      qc.invalidateQueries({ queryKey: ['quotations'] })
+    },
   })
 }

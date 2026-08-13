@@ -25,6 +25,7 @@ const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'))
 const InvoicesPage = lazy(() => import('@/pages/InvoicesPage'))
 const ApprovalsPage = lazy(() => import('@/pages/ApprovalsPage'))
 const RecurringPage = lazy(() => import('@/pages/RecurringPage'))
+const RequestQuotePage = lazy(() => import('@/pages/RequestQuotePage'))
 
 function Lazy({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageFallback />}>{children}</Suspense>
@@ -113,6 +114,7 @@ export default function App() {
                   <Route path="/invoices" element={<Lazy><InvoicesPage /></Lazy>} />
                   <Route path="/approvals" element={<Lazy><ApprovalsPage /></Lazy>} />
                   <Route path="/recurring" element={<Lazy><RecurringPage /></Lazy>} />
+                  <Route path="/quote-requests" element={<Lazy><RequestQuotePage /></Lazy>} />
 
                   <Route element={<RequireStaff />}>
                     <Route
