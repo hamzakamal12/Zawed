@@ -235,6 +235,35 @@ export interface QuoteRequestResult {
   request_number: string
 }
 
+export type AccountRequestStatus = 'new' | 'contacted' | 'approved' | 'rejected'
+
+export interface AccountRequest {
+  id: string
+  company_name: string
+  company_type: CompanyType
+  contact_name: string
+  email: string
+  phone: string | null
+  city: string | null
+  tax_id: string | null
+  notes: string | null
+  status: AccountRequestStatus
+  company_id: string | null
+  review_note: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+}
+
+export interface ProductPrice {
+  id: string
+  product_id: string
+  cost_usd: number
+  margin_percent: number
+  effective_from: string
+  effective_to: string | null
+}
+
 export interface PriceRow {
   product_id: string
   unit_price_sdg: number | null
@@ -260,6 +289,7 @@ export interface Database {
       products: { Row: Product; Insert: Partial<Product>; Update: Partial<Product> }
       inventory: { Row: Inventory; Insert: Partial<Inventory>; Update: Partial<Inventory> }
       fx_rates: { Row: FxRate; Insert: Partial<FxRate>; Update: Partial<FxRate> }
+      product_prices: { Row: ProductPrice; Insert: Partial<ProductPrice>; Update: Partial<ProductPrice> }
       price_tiers: { Row: PriceTier; Insert: Partial<PriceTier>; Update: Partial<PriceTier> }
       orders: { Row: Order; Insert: Partial<Order>; Update: Partial<Order> }
       order_items: { Row: OrderItem; Insert: Partial<OrderItem>; Update: Partial<OrderItem> }
@@ -270,6 +300,7 @@ export interface Database {
       recurring_orders: { Row: RecurringOrder; Insert: Partial<RecurringOrder>; Update: Partial<RecurringOrder> }
       quote_requests: { Row: QuoteRequest; Insert: Partial<QuoteRequest>; Update: Partial<QuoteRequest> }
       quote_request_items: { Row: QuoteRequestItem; Insert: Partial<QuoteRequestItem>; Update: Partial<QuoteRequestItem> }
+      account_requests: { Row: AccountRequest; Insert: Partial<AccountRequest>; Update: Partial<AccountRequest> }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

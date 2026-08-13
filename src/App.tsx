@@ -26,6 +26,9 @@ const InvoicesPage = lazy(() => import('@/pages/InvoicesPage'))
 const ApprovalsPage = lazy(() => import('@/pages/ApprovalsPage'))
 const RecurringPage = lazy(() => import('@/pages/RecurringPage'))
 const RequestQuotePage = lazy(() => import('@/pages/RequestQuotePage'))
+const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
+const AdminCatalogPage = lazy(() => import('@/pages/admin/AdminCatalogPage'))
+const AccountRequestsPage = lazy(() => import('@/pages/admin/AccountRequestsPage'))
 
 function Lazy({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageFallback />}>{children}</Suspense>
@@ -103,6 +106,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<Lazy><RegisterPage /></Lazy>} />
               <Route element={<RequireAuth />}>
                 <Route element={<AppShell />}>
                   <Route path="/catalog" element={<CatalogPage />} />
@@ -143,6 +147,8 @@ export default function App() {
                     />
                     <Route path="/admin/quotations" element={<Lazy><QuotationsPage /></Lazy>} />
                     <Route path="/admin/reports" element={<Lazy><ReportsPage /></Lazy>} />
+                    <Route path="/admin/catalog" element={<Lazy><AdminCatalogPage /></Lazy>} />
+                    <Route path="/admin/account-requests" element={<Lazy><AccountRequestsPage /></Lazy>} />
                   </Route>
 
                   <Route path="*" element={<Navigate to="/catalog" replace />} />

@@ -115,7 +115,7 @@ export default function LandingPage() {
             {/* Full-width and stacked on phones — side by side they came out
                 uneven, since each button sized to its own label. */}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link to="/login" className="w-full sm:w-auto">
+              <Link to="/register" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full">
                   {t('lp_cta_primary')}
                   <Arrow size={18} />
@@ -257,7 +257,7 @@ export default function LandingPage() {
           <div className="relative">
             <h2 className="text-2xl font-extrabold text-white sm:text-3xl">{t('lp_final_title')}</h2>
             <p className="mt-3 text-white/80">{t('lp_final_sub')}</p>
-            <Link to="/login" className="mt-7 inline-block">
+            <Link to="/register" className="mt-7 inline-block">
               <Button size="lg" variant="inverse">
                 {t('lp_cta_primary')}
                 <Arrow size={18} />

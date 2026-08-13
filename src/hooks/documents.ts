@@ -15,6 +15,9 @@ import type {
   QuoteRequest,
   QuoteRequestItem,
   QuoteRequestResult,
+  AccountRequest,
+  AccountRequestStatus,
+  CompanyType,
 } from '@/lib/database.types'
 
 /* ------------------------------------------------------------------ */
@@ -545,5 +548,108 @@ export function useQuoteRequestToQuotation() {
       qc.invalidateQueries({ queryKey: ['quote-requests'] })
       qc.invalidateQueries({ queryKey: ['quotations'] })
     },
+  })
+}
+
+/* ------------------------------------------------------------------ */
+/* Account requests (organizations applying to join)                   */
+/* ------------------------------------------------------------------ */
+
+export interface AccountRequestInput {
+  companyName: string
+  contactName: string
+  email: string
+  phone?: string | null
+  companyType?: CompanyType
+  city?: string | null
+  taxId?: string | null
+  notes?: string | null
+}
+
+/**
+ * The one call an anonymous visitor is allowed to make. Everything is
+ * validated server-side; the RPC is the only writer, so status always starts
+ * at 'new' and cannot be forged.
+ */
+export function useSubmitAccountRequest() {
+  return useMutation({
+    mutationFn: async (input: AccountRequestInput) => {
+      const { data, error } = await supabase.rpc('submit_account_request', {
+        p_company_name: input.companyName,
+        p_contact_name: input.contactName,
+        p_email: input.email,
+        p_phone: input.phone ?? null,
+        p_company_type: input.companyType ?? 'sme',
+        p_city: input.city ?? null,
+        p_tax_id: input.taxId ?? null,
+        p_notes: input.notes ?? null,
+      })
+      if (error) throw error
+      const rows = (data ?? []) as { request_id: string }[]
+      return rows[0] ?? { request_id: '' }
+    },
+  })
+}
+
+export function useAccountRequests() {
+  const { isStaff } = useAuth()
+  return useQuery({
+    queryKey: ['account-requests'],
+    enabled: isStaff,
+    queryFn: async (): Promise<AccountRequest[]> => {
+      const { data, error } = await supabase
+        .from('account_requests')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100)
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+export function useApproveAccountRequest() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      requestId: string
+      paymentTermsDays?: number
+      requiresPo?: boolean
+      note?: string | null
+    }) => {
+      const { data, error } = await supabase.rpc('approve_account_request', {
+        p_request_id: input.requestId,
+        p_payment_terms_days: input.paymentTermsDays ?? 30,
+        p_requires_po: input.requiresPo ?? false,
+        p_note: input.note ?? null,
+      })
+      if (error) throw error
+      const rows = (data ?? []) as { company_id: string; company_name: string }[]
+      if (!rows[0]) throw new Error('approval failed')
+      return rows[0]
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['account-requests'] })
+      qc.invalidateQueries({ queryKey: ['companies'] })
+    },
+  })
+}
+
+export function useDecideAccountRequest() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      requestId: string
+      status: Exclude<AccountRequestStatus, 'approved'>
+      note?: string | null
+    }) => {
+      const { error } = await supabase.rpc('decide_account_request', {
+        p_request_id: input.requestId,
+        p_status: input.status,
+        p_note: input.note ?? null,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['account-requests'] }),
   })
 }
