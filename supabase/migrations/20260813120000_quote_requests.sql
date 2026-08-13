@@ -53,8 +53,10 @@ create table if not exists quote_request_items (
 create index if not exists idx_quote_request_items_request
   on quote_request_items(request_id);
 
+-- search_path is pinned like every other trigger function here: without it the
+-- unqualified next_doc_number() call resolves through the caller's path.
 create or replace function assign_request_number()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = public as $$
 begin
   if new.request_number is null then new.request_number := next_doc_number('RFQ'); end if;
   return new;
