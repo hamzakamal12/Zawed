@@ -22,6 +22,7 @@ export const strings = {
     signing_in: 'جارٍ الدخول…',
     sign_out: 'خروج',
     login_failed: 'بيانات الدخول غير صحيحة',
+    network_error: 'تعذّر الاتصال بالخادم — تحقّق من الإنترنت وحاول مجدداً',
 
     // catalog
     catalog_title: 'الكتالوج',
@@ -254,6 +255,7 @@ export const strings = {
     signing_in: 'Signing in…',
     sign_out: 'Sign out',
     login_failed: 'Invalid credentials',
+    network_error: 'Cannot reach the server — check your connection and try again',
 
     catalog_title: 'Catalog',
     catalog_subtitle: 'Pick your items and add them to the cart',

@@ -25,9 +25,9 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    const { error: err } = await signIn(email.trim(), password)
+    const { error: err, isNetworkError } = await signIn(email.trim(), password)
     if (err) {
-      setError(t('login_failed'))
+      setError(isNetworkError ? t('network_error') : t('login_failed'))
       setLoading(false)
       return
     }

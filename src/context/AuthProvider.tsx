@@ -10,7 +10,10 @@ interface AuthValue {
   loading: boolean
   isStaff: boolean
   isAdmin: boolean
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null; isNetworkError: boolean }>
   signOut: () => Promise<void>
 }
 
@@ -92,7 +95,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin: role === 'admin',
       async signIn(email, password) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
-        return { error: error?.message ?? null }
+        if (!error) return { error: null, isNetworkError: false }
+        // Supabase surfaces an unreachable backend as a retryable fetch error
+        // with no HTTP status. Reporting that as "wrong password" sends people
+        // chasing the wrong problem, so the two are separated here.
+        const isNetworkError =
+          error.status === undefined ||
+          error.status === 0 ||
+          /fetch|network/i.test(error.message)
+        return { error: error.message, isNetworkError }
       },
       async signOut() {
         await supabase.auth.signOut()
