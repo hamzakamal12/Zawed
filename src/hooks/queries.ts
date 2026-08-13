@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthProvider'
 import type {
   Category,
+  Company,
   FxRate,
   Inventory,
   Order,
@@ -191,6 +192,7 @@ export function useSetFxRate() {
 /* ------------------------------------------------------------------ */
 
 export interface OrderWithItems extends Order {
+  companies?: Pick<Company, 'name_ar' | 'name_en' | 'tax_id' | 'billing_address'> | null
   order_items: (OrderItem & { products: Pick<Product, 'name_ar' | 'name_en' | 'sku' | 'unit'> | null })[]
 }
 
@@ -219,7 +221,9 @@ export function useOrder(orderId: string | undefined) {
     queryFn: async (): Promise<OrderWithItems | null> => {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, order_items(*, products(name_ar, name_en, sku, unit))')
+        .select(
+          '*, companies(name_ar, name_en, tax_id, billing_address), order_items(*, products(name_ar, name_en, sku, unit))',
+        )
         .eq('id', orderId!)
         .maybeSingle()
       if (error) throw error

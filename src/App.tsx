@@ -18,6 +18,16 @@ import OrderDetailPage from '@/pages/OrderDetailPage'
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
 const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'))
 const AdminFxPage = lazy(() => import('@/pages/admin/AdminFxPage'))
+const QuotationsPage = lazy(() => import('@/pages/admin/QuotationsPage'))
+const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'))
+// Customer-side extras are split too — most sessions never open them.
+const InvoicesPage = lazy(() => import('@/pages/InvoicesPage'))
+const ApprovalsPage = lazy(() => import('@/pages/ApprovalsPage'))
+const RecurringPage = lazy(() => import('@/pages/RecurringPage'))
+
+function Lazy({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<PageFallback />}>{children}</Suspense>
+}
 
 function PageFallback() {
   return (
@@ -99,6 +109,9 @@ export default function App() {
                   <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/orders" element={<OrdersPage />} />
                   <Route path="/orders/:id" element={<OrderDetailPage />} />
+                  <Route path="/invoices" element={<Lazy><InvoicesPage /></Lazy>} />
+                  <Route path="/approvals" element={<Lazy><ApprovalsPage /></Lazy>} />
+                  <Route path="/recurring" element={<Lazy><RecurringPage /></Lazy>} />
 
                   <Route element={<RequireStaff />}>
                     <Route
@@ -125,6 +138,8 @@ export default function App() {
                         </Suspense>
                       }
                     />
+                    <Route path="/admin/quotations" element={<Lazy><QuotationsPage /></Lazy>} />
+                    <Route path="/admin/reports" element={<Lazy><ReportsPage /></Lazy>} />
                   </Route>
 
                   <Route path="*" element={<Navigate to="/catalog" replace />} />

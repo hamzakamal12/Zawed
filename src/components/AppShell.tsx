@@ -9,29 +9,45 @@ import {
   Coins,
   Package,
   WifiOff,
+  FileText,
+  Receipt,
+  Repeat,
+  Inbox,
+  BarChart3,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '@/context/AuthProvider'
 import { useCart } from '@/context/CartProvider'
 import { useI18n } from '@/i18n/I18nProvider'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { useOrderQueue } from '@/hooks/useOrderQueue'
 import { Button } from './ui'
 
 export default function AppShell() {
   const { t, toggleLang, pick } = useI18n()
   const { profile, company, isStaff, isAdmin, signOut } = useAuth()
+  const isCompanyAdmin = profile?.role === 'customer_admin'
   const { count } = useCart()
   const online = useOnlineStatus()
+  const queue = useOrderQueue()
   const navigate = useNavigate()
 
+  // Bottom bar on mobile stays at four items; the rest live in the sidebar.
   const customerNav = [
     { to: '/catalog', label: t('nav_catalog'), icon: LayoutGrid },
     { to: '/cart', label: t('nav_cart'), icon: ShoppingCart, badge: count },
     { to: '/orders', label: t('nav_orders'), icon: ClipboardList },
   ]
+  const secondaryNav = [
+    { to: '/invoices', label: t('nav_invoices'), icon: Receipt },
+    { to: '/recurring', label: t('nav_recurring'), icon: Repeat },
+    ...(isCompanyAdmin ? [{ to: '/approvals', label: t('nav_approvals'), icon: Inbox }] : []),
+  ]
   const staffNav = [
     { to: '/admin', label: t('nav_dashboard'), icon: Gauge },
     { to: '/admin/orders', label: t('nav_admin_orders'), icon: Package },
+    { to: '/admin/quotations', label: t('nav_quotations'), icon: FileText },
+    { to: '/admin/reports', label: t('nav_reports'), icon: BarChart3 },
     ...(isAdmin ? [{ to: '/admin/fx', label: t('nav_admin_fx'), icon: Coins }] : []),
   ]
 
@@ -46,6 +62,12 @@ export default function AppShell() {
         <div className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-sm font-semibold text-white">
           <WifiOff size={16} />
           {t('offline')}
+          {queue.count > 0 && <span>· {t('queued_count', { n: queue.count })}</span>}
+        </div>
+      )}
+      {online && queue.flushing && (
+        <div className="bg-primary-600 px-4 py-2 text-center text-sm font-semibold text-white">
+          {t('sending_queued')}
         </div>
       )}
 
@@ -64,6 +86,9 @@ export default function AppShell() {
 
           <nav className="flex-1 space-y-1 overflow-y-auto p-2">
             {customerNav.map((item) => (
+              <SideLink key={item.to} {...item} />
+            ))}
+            {secondaryNav.map((item) => (
               <SideLink key={item.to} {...item} />
             ))}
             {isStaff && (

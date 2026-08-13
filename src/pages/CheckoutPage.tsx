@@ -4,6 +4,8 @@ import { CheckCircle2 } from 'lucide-react'
 import { useCart } from '@/context/CartProvider'
 import { useAuth } from '@/context/AuthProvider'
 import { usePlaceOrder } from '@/hooks/queries'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { enqueueOrder } from '@/lib/orderQueue'
 import { useI18n } from '@/i18n/I18nProvider'
 import { Button, Card, CardBody, CardTitle, Input, Label, Textarea } from '@/components/ui'
 
@@ -13,6 +15,8 @@ export default function CheckoutPage() {
   const { lines, clear } = useCart()
   const { company } = useAuth()
   const placeOrder = usePlaceOrder()
+  const online = useOnlineStatus()
+  const [queued, setQueued] = useState(false)
 
   const requiresPo = company?.requires_po_number ?? false
 
@@ -24,6 +28,21 @@ export default function CheckoutPage() {
 
   if (lines.length === 0 && !placeOrder.isSuccess) {
     return <Navigate to="/cart" replace />
+  }
+
+  if (queued) {
+    return (
+      <div className="mx-auto max-w-md py-10 text-center">
+        <CheckCircle2 size={56} className="mx-auto text-amber-500" />
+        <h1 className="mt-4 text-xl font-extrabold text-ink">{t('queued_offline')}</h1>
+        <div className="mt-6 flex justify-center gap-2">
+          <Button onClick={() => navigate('/orders')}>{t('orders_title')}</Button>
+          <Button variant="outline" onClick={() => navigate('/catalog')}>
+            {t('browse_catalog')}
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (placeOrder.isSuccess) {
@@ -47,14 +66,25 @@ export default function CheckoutPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    const payload = {
+      items: lines.map((l) => ({ product_id: l.productId, qty: l.qty })),
+      delivery_address: address.trim(),
+      requested_delivery_date: date || null,
+      po_number: po.trim() || null,
+      notes: notes.trim() || null,
+    }
+
+    // Offline: hold the order locally and let the queue send it on reconnect.
+    if (!online) {
+      enqueueOrder(payload, Number(import.meta.env.VITE_DEFAULT_VAT_PERCENT ?? 0))
+      clear()
+      setQueued(true)
+      return
+    }
+
     try {
-      await placeOrder.mutateAsync({
-        items: lines.map((l) => ({ product_id: l.productId, qty: l.qty })),
-        delivery_address: address.trim(),
-        requested_delivery_date: date || null,
-        po_number: po.trim() || null,
-        notes: notes.trim() || null,
-      })
+      await placeOrder.mutateAsync(payload)
       clear()
     } catch (err) {
       // Postgres raises Arabic messages for business-rule violations

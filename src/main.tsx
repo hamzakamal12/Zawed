@@ -31,6 +31,16 @@ const persister = createSyncStoragePersister({
   key: 'zawed.query-cache',
 })
 
+// Offline shell. Registered only in production so the dev server keeps
+// serving fresh modules.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* offline support is an enhancement; the app works without it */
+    })
+  })
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <PersistQueryClientProvider

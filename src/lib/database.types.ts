@@ -96,6 +96,7 @@ export interface Order {
   id: string
   order_number: string | null
   company_id: string
+  quotation_id: string | null
   po_number: string | null
   status: OrderStatus
   currency: CurrencyCode
@@ -107,6 +108,11 @@ export interface Order {
   requested_delivery_date: string | null
   delivered_at: string | null
   created_by: string | null
+  approved_by: string | null
+  internal_approval: InternalApproval
+  approval_comment: string | null
+  approved_at: string | null
+  notes: string | null
   created_at: string
 }
 
@@ -118,6 +124,79 @@ export interface OrderItem {
   unit_price_snapshot: number
   line_total: number
   qty_delivered: number
+}
+
+export type InternalApproval = 'not_required' | 'pending' | 'approved' | 'rejected'
+export type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
+export type InvoiceStatus = 'unpaid' | 'partially_paid' | 'paid' | 'overdue'
+export type PaymentMethod = 'bank_transfer' | 'bankak' | 'fawry' | 'cash' | 'cheque'
+export type RecurringFrequency = 'weekly' | 'monthly' | 'quarterly'
+
+export interface Quotation {
+  id: string
+  quote_number: string | null
+  company_id: string
+  created_by: string | null
+  status: QuotationStatus
+  currency: CurrencyCode
+  fx_rate_snapshot: number | null
+  valid_until: string
+  subtotal: number
+  vat_percent: number
+  vat_amount: number
+  total: number
+  notes_ar: string | null
+  terms_ar: string | null
+  converted_order_id: string | null
+  created_at: string
+}
+
+export interface QuotationItem {
+  id: string
+  quotation_id: string
+  product_id: string
+  qty: number
+  unit_price_snapshot: number
+  line_total: number
+}
+
+export interface Invoice {
+  id: string
+  invoice_number: string | null
+  order_id: string
+  company_id: string
+  issue_date: string
+  due_date: string | null
+  currency: CurrencyCode
+  total: number
+  amount_paid: number
+  status: InvoiceStatus
+  pdf_url: string | null
+  created_at: string
+}
+
+export interface Payment {
+  id: string
+  invoice_id: string
+  amount: number
+  currency: CurrencyCode
+  method: PaymentMethod
+  reference_number: string | null
+  recorded_by: string | null
+  paid_at: string
+}
+
+export interface RecurringOrder {
+  id: string
+  company_id: string
+  name: string
+  frequency: RecurringFrequency
+  next_run_date: string | null
+  is_active: boolean
+  items: { product_id: string; qty: number }[]
+  last_run_at: string | null
+  last_order_id: string | null
+  created_at: string
 }
 
 /** Row shape of get_price() / get_catalog_prices(). */
@@ -149,6 +228,11 @@ export interface Database {
       price_tiers: { Row: PriceTier; Insert: Partial<PriceTier>; Update: Partial<PriceTier> }
       orders: { Row: Order; Insert: Partial<Order>; Update: Partial<Order> }
       order_items: { Row: OrderItem; Insert: Partial<OrderItem>; Update: Partial<OrderItem> }
+      quotations: { Row: Quotation; Insert: Partial<Quotation>; Update: Partial<Quotation> }
+      quotation_items: { Row: QuotationItem; Insert: Partial<QuotationItem>; Update: Partial<QuotationItem> }
+      invoices: { Row: Invoice; Insert: Partial<Invoice>; Update: Partial<Invoice> }
+      payments: { Row: Payment; Insert: Partial<Payment>; Update: Partial<Payment> }
+      recurring_orders: { Row: RecurringOrder; Insert: Partial<RecurringOrder>; Update: Partial<RecurringOrder> }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

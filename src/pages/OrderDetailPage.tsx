@@ -1,6 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useOrder } from '@/hooks/queries'
+import { useOrder, type OrderWithItems } from '@/hooks/queries'
+import { useIssueInvoice, useInvoiceForOrder } from '@/hooks/documents'
+import { useAuth } from '@/context/AuthProvider'
+import { DocumentButton } from '@/components/DocumentButtons'
+import { Badge, Button } from '@/components/ui'
+import type { DocData } from '@/lib/pdf/documents'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDate, formatDateTime, formatNumber, formatSDG } from '@/lib/format'
 import { Card, CardBody, CardTitle, Skeleton } from '@/components/ui'
@@ -10,6 +15,7 @@ export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { t, pick, lang, dir } = useI18n()
   const order = useOrder(id)
+  const { isStaff } = useAuth()
   const BackIcon = dir === 'rtl' ? ArrowLeft : ArrowRight
 
   if (order.isLoading) {
@@ -43,6 +49,30 @@ export default function OrderDetailPage() {
         </div>
         <OrderStatusBadge status={o.status} />
       </div>
+
+      {o.internal_approval !== 'not_required' && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted">{t('approvals_title')}:</span>
+          <Badge
+            tone={
+              o.internal_approval === 'approved'
+                ? 'success'
+                : o.internal_approval === 'rejected'
+                  ? 'danger'
+                  : 'warning'
+            }
+          >
+            {o.internal_approval === 'approved'
+              ? t('approve')
+              : o.internal_approval === 'rejected'
+                ? t('reject')
+                : t('awaiting_your_approval')}
+          </Badge>
+          {o.approval_comment && <span className="text-muted">— {o.approval_comment}</span>}
+        </div>
+      )}
+
+      <DocumentActions order={o} isStaff={isStaff} />
 
       <Card>
         <CardBody>
@@ -108,6 +138,63 @@ export default function OrderDetailPage() {
           </dl>
         </CardBody>
       </Card>
+    </div>
+  )
+}
+
+/** Builds the shared document payload once for every document kind. */
+function DocumentActions({
+  order,
+  isStaff,
+}: {
+  order: OrderWithItems
+  isStaff: boolean
+}) {
+  const { t, pick } = useI18n()
+  const invoice = useInvoiceForOrder(order.id)
+  const issue = useIssueInvoice()
+
+  const build = (kind: DocData['kind'], number: string): DocData => ({
+    kind,
+    number,
+    date: order.created_at,
+    poNumber: order.po_number,
+    customer: {
+      name: order.companies ? pick(order.companies.name_ar, order.companies.name_en) : '—',
+      address: order.delivery_address,
+      taxId: order.companies?.tax_id ?? null,
+    },
+    lines: order.order_items.map((i) => ({
+      name: i.products ? pick(i.products.name_ar, i.products.name_en) : '—',
+      sku: i.products?.sku ?? '',
+      qty: i.qty,
+      unitPrice: Number(i.unit_price_snapshot),
+      lineTotal: Number(i.line_total),
+    })),
+    subtotal: Number(order.subtotal),
+    vatAmount: Number(order.vat_amount),
+    total: Number(order.total),
+    fxRate: order.fx_rate_snapshot,
+    notes: order.notes,
+  })
+
+  const orderNo = order.order_number ?? '—'
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <DocumentButton kind="proforma" build={() => build('proforma', orderNo)} />
+      <DocumentButton kind="delivery_note" build={() => build('delivery_note', orderNo)} />
+      {invoice.data && (
+        <DocumentButton
+          kind="invoice"
+          build={() => build('invoice', invoice.data!.invoice_number ?? orderNo)}
+        />
+      )}
+      {isStaff && !invoice.data && (
+        <Button size="sm" onClick={() => issue.mutate(order.id)} disabled={issue.isPending}>
+          {issue.isPending ? t('loading') : t('issue_invoice')}
+        </Button>
+      )}
     </div>
   )
 }
