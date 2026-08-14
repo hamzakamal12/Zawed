@@ -43,6 +43,10 @@ export interface Profile {
   role: UserRole
   company_id: string | null
   is_active: boolean
+  // Mirrored from auth.users so a staff member can tell which login a row is;
+  // written by the invite-user function, never editable by the account holder.
+  email: string | null
+  created_at: string
 }
 
 export interface Category {

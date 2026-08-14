@@ -103,7 +103,44 @@ export const strings = {
     ar_approve: 'قبول وإنشاء المؤسسة',
     ar_mark_contacted: 'تم التواصل',
     ar_company_created: 'أُنشئت المؤسسة: {name}',
-    ar_next_step: 'بقي إنشاء مستخدم الدخول لهذه المؤسسة من لوحة Supabase وربطه بها.',
+    ar_next_step: 'بقي إنشاء مستخدم الدخول لهذه المؤسسة من صفحة «المستخدمون» وربطه بها.',
+
+    // roles
+    role_admin: 'مدير النظام',
+    role_sales: 'مبيعات',
+    role_warehouse: 'مخزن',
+    role_customer_admin: 'مسؤول حساب العميل',
+    role_customer_requester: 'موظف طلبات',
+
+    // users admin
+    users_title: 'المستخدمون',
+    users_subtitle: 'أنشئ حسابات الدخول واضبط الأدوار والمؤسسات.',
+    users_invite: 'دعوة مستخدم',
+    users_invite_note:
+      'يصل المستخدم رابط دعوة على بريده ليضع كلمة مروره بنفسه — لا تُنشأ كلمات مرور هنا ولا تُرسل عبر الرسائل.',
+    users_send_invite: 'إرسال الدعوة',
+    users_invite_sent: 'أُرسلت الدعوة إلى {email}',
+    users_email: 'البريد الإلكتروني',
+    users_full_name: 'الاسم الكامل',
+    users_role: 'الدور',
+    users_company: 'المؤسسة',
+    users_company_note: 'حساب العميل بلا مؤسسة لن يرى أي طلبات أو فواتير.',
+    users_search: 'ابحث بالاسم أو البريد أو المؤسسة',
+    users_staff: 'فريق العمل',
+    users_customers: 'مستخدمو المؤسسات',
+    users_manage: 'إدارة',
+    users_saved: 'حُفظ التعديل',
+    users_disabled: 'موقوف',
+    users_disable: 'إيقاف الحساب',
+    users_enable: 'تفعيل الحساب',
+    users_disable_note:
+      'الإيقاف يمنع الاستخدام ويحتفظ بكل سجلّ الطلبات والفواتير — لا تُحذف الحسابات.',
+    users_no_name: 'بلا اسم',
+    users_no_company: 'غير مرتبط بمؤسسة',
+    users_you: 'أنت',
+    users_self_note: 'لا يمكنك تعديل دورك أو إيقاف حسابك بنفسك.',
+    users_readonly: 'العرض فقط — تعديل الأدوار وإنشاء الحسابات مخصّص لمدير النظام.',
+    nav_users: 'المستخدمون',
 
     // catalog admin
     cat_title: 'إدارة الكتالوج',
@@ -437,7 +474,9 @@ export const strings = {
     nav_account: 'Account',
     nav_documents: 'Documents',
     nav_requests: 'Quote requests',
-    nav_catalog_admin: 'Catalog',
+    // Distinct from nav_catalog ("Catalog"): both sit in the same sidebar and
+    // an identical label made the admin entry look like a duplicate.
+    nav_catalog_admin: 'Manage catalog',
     nav_account_requests: 'Account requests',
 
     nav_admin: 'Admin',
@@ -530,7 +569,44 @@ export const strings = {
     ar_approve: 'Approve and create company',
     ar_mark_contacted: 'Mark contacted',
     ar_company_created: 'Company created: {name}',
-    ar_next_step: 'Still to do: create the login user for this company in Supabase and link it.',
+    ar_next_step: 'Still to do: invite the login user for this company from the Users page.',
+
+    // roles
+    role_admin: 'Administrator',
+    role_sales: 'Sales',
+    role_warehouse: 'Warehouse',
+    role_customer_admin: 'Company approver',
+    role_customer_requester: 'Requester',
+
+    // users admin
+    users_title: 'Users',
+    users_subtitle: 'Create logins and set roles and companies.',
+    users_invite: 'Invite user',
+    users_invite_note:
+      'The user gets an invite link by email and sets their own password — no passwords are created here or sent over chat.',
+    users_send_invite: 'Send invite',
+    users_invite_sent: 'Invite sent to {email}',
+    users_email: 'Email',
+    users_full_name: 'Full name',
+    users_role: 'Role',
+    users_company: 'Company',
+    users_company_note: 'A customer account with no company will see no orders or invoices.',
+    users_search: 'Search by name, email or company',
+    users_staff: 'Staff',
+    users_customers: 'Company users',
+    users_manage: 'Manage',
+    users_saved: 'Saved',
+    users_disabled: 'Disabled',
+    users_disable: 'Disable account',
+    users_enable: 'Enable account',
+    users_disable_note:
+      'Disabling blocks access and keeps the full order and invoice history — accounts are never deleted.',
+    users_no_name: 'No name',
+    users_no_company: 'No company',
+    users_you: 'You',
+    users_self_note: 'You cannot change your own role or disable your own account.',
+    users_readonly: 'Read only — creating accounts and changing roles is for administrators.',
+    nav_users: 'Users',
 
     // catalog admin
     cat_title: 'Catalog management',

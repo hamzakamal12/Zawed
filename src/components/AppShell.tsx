@@ -17,6 +17,7 @@ import {
   BarChart3,
   Boxes,
   Building2,
+  Users,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth } from '@/context/AuthProvider'
@@ -54,6 +55,7 @@ export default function AppShell() {
     { to: '/admin/reports', label: t('nav_reports'), icon: BarChart3 },
     { to: '/admin/account-requests', label: t('nav_account_requests'), icon: Building2 },
     ...(isAdmin ? [{ to: '/admin/catalog', label: t('nav_catalog_admin'), icon: Boxes }] : []),
+    { to: '/admin/users', label: t('nav_users'), icon: Users },
     ...(isAdmin ? [{ to: '/admin/fx', label: t('nav_admin_fx'), icon: Coins }] : []),
   ]
 

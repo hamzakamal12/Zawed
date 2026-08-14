@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: typecheck and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # The build is not redundant with the typecheck: the service worker is
+      # stamped with a build id at this step, and the plugin throws if the
+      # placeholder is missing. That failure only shows up here.
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: ci-placeholder-key
+
+  database:
+    name: migrations and SQL suites
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Matches the major version the live project runs on.
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      # Applies every migration in order to an EMPTY database and then runs the
+      # assertion suites, each against its own fresh copy. Catches the two
+      # things that break silently: a migration edited in place so the sequence
+      # no longer applies from scratch, and a security rule quietly relaxed.
+      - name: Apply migrations and run SQL suites
+        run: supabase/tests/run.sh
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: postgres

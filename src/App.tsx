@@ -29,6 +29,7 @@ const RequestQuotePage = lazy(() => import('@/pages/RequestQuotePage'))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
 const AdminCatalogPage = lazy(() => import('@/pages/admin/AdminCatalogPage'))
 const AccountRequestsPage = lazy(() => import('@/pages/admin/AccountRequestsPage'))
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
 
 function Lazy({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageFallback />}>{children}</Suspense>
@@ -149,6 +150,7 @@ export default function App() {
                     <Route path="/admin/reports" element={<Lazy><ReportsPage /></Lazy>} />
                     <Route path="/admin/catalog" element={<Lazy><AdminCatalogPage /></Lazy>} />
                     <Route path="/admin/account-requests" element={<Lazy><AccountRequestsPage /></Lazy>} />
+                    <Route path="/admin/users" element={<Lazy><AdminUsersPage /></Lazy>} />
                   </Route>
 
                   <Route path="*" element={<Navigate to="/catalog" replace />} />
