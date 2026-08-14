@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { useCurrentFx, useFxHistory, useSetFxRate } from '@/hooks/queries'
+import { CheckCircle2 } from 'lucide-react'
+import { useCurrentFx, useFxHistory, useFxStatus, useSetFxRate, useSetFxThresholds } from '@/hooks/queries'
+import FxAgeNotice from '@/components/FxAgeNotice'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDateTime, formatNumber, hoursSince } from '@/lib/format'
 import {
@@ -27,8 +28,10 @@ export default function AdminFxPage() {
   const [source, setSource] = useState<FxSource>('parallel_market')
   const [done, setDone] = useState(false)
 
+  // The age judgement comes from the server, which is also what enforces it —
+  // a local `age > 24` here could show "fine" for a rate the server is about
+  // to refuse. hoursSince() is kept only for the display line.
   const age = hoursSince(current.data?.effective_from)
-  const stale = age != null && age > 24
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,9 +56,7 @@ export default function AdminFxPage() {
         <p className="mt-1 text-sm text-muted">{t('fx_subtitle')}</p>
       </header>
 
-      {stale && (
-        <Notice tone="warning" icon={<AlertTriangle size={18} />}>{t('fx_stale_warning')}</Notice>
-      )}
+      <FxAgeNotice />
 
       <Card>
         <CardBody>
@@ -116,6 +117,8 @@ export default function AdminFxPage() {
         </CardBody>
       </Card>
 
+      <FxLimits />
+
       <Card>
         <CardBody>
           <CardTitle className="mb-3">{t('fx_history')}</CardTitle>
@@ -145,5 +148,88 @@ export default function AdminFxPage() {
         </CardBody>
       </Card>
     </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * The two thresholds, editable because they are a business call and not a
+ * constant: how fast the market moves is something the person updating the
+ * rate every morning knows better than the code does.
+ */
+function FxLimits() {
+  const { t } = useI18n()
+  const fx = useFxStatus()
+  const save = useSetFxThresholds()
+  const [warn, setWarn] = useState('')
+  const [block, setBlock] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+
+  // Seeded from the server the first time it arrives, so the fields show what
+  // is actually in force rather than a hardcoded guess.
+  const warnValue = warn || String(fx.data?.warn_after ?? '')
+  const blockValue = block || String(fx.data?.block_after ?? '')
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSaved(false)
+    try {
+      await save.mutateAsync({ warnAfter: Number(warnValue), blockAfter: Number(blockValue) })
+      setSaved(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('error_generic'))
+    }
+  }
+
+  return (
+    <Card>
+      <CardBody>
+        <CardTitle className="mb-1">{t('fx_limits_title')}</CardTitle>
+        <p className="mb-4 text-sm leading-relaxed text-muted">{t('fx_limits_note')}</p>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{t('fx_warn_after')}</Label>
+              <Input
+                type="number"
+                min="1"
+                max="8760"
+                dir="ltr"
+                value={warnValue}
+                onChange={(e) => setWarn(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>{t('fx_block_after')}</Label>
+              <Input
+                type="number"
+                min="1"
+                max="8760"
+                dir="ltr"
+                value={blockValue}
+                onChange={(e) => setBlock(e.target.value)}
+              />
+              {/* Below the field rather than as a Label hint: beside a label
+                  this long it wrapped onto two lines and crowded the input. */}
+              <p className="mt-1 text-[11px] text-muted">{t('fx_limits_hint')}</p>
+            </div>
+          </div>
+
+          {saved && <Notice tone="success">{t('fx_limits_saved')}</Notice>}
+          {error && <Notice tone="danger">{error}</Notice>}
+
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={save.isPending || !(Number(blockValue) >= Number(warnValue))}
+          >
+            {save.isPending ? t('loading') : t('save')}
+          </Button>
+        </form>
+      </CardBody>
+    </Card>
   )
 }

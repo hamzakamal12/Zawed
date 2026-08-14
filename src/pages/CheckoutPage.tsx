@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthProvider'
 import { useOrder, usePlaceOrder } from '@/hooks/queries'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { enqueueOrder } from '@/lib/orderQueue'
+import FxAgeNotice from '@/components/FxAgeNotice'
 import { useI18n } from '@/i18n/I18nProvider'
 import { Button, Card, CardBody, CardTitle, Input, Label, Notice, Textarea } from '@/components/ui'
 import { DocumentButton } from '@/components/DocumentButtons'
@@ -92,6 +93,11 @@ export default function CheckoutPage() {
   return (
     <div className="mx-auto max-w-xl space-y-5">
       <h1 className="text-2xl font-extrabold text-ink">{t('checkout_title')}</h1>
+
+      {/* Told here rather than after the submit fails: the server refuses an
+          order on an out-of-date rate, and finding that out only once the
+          basket has been filled in is a worse experience than being warned. */}
+      <FxAgeNotice compact />
 
       <Card>
         <CardBody>

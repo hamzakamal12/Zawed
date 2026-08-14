@@ -314,3 +314,55 @@ export function useUpdateOrderStatus() {
     },
   })
 }
+
+/* ------------------------------------------------------------------ */
+
+export interface FxStatus {
+  rate: number | null
+  effective_from: string | null
+  age_hours: number | null
+  warn_after: number
+  block_after: number
+  is_stale: boolean
+  is_expired: boolean
+}
+
+/**
+ * The one source of truth for "how old is the rate, and so what?".
+ *
+ * The thresholds live in the database and the same function backs the server
+ * guard that refuses expired orders, so a screen can never show "fine" for a
+ * rate the server is about to reject.
+ */
+export function useFxStatus() {
+  return useQuery({
+    queryKey: ['fx-status'],
+    queryFn: async (): Promise<FxStatus | null> => {
+      const { data, error } = await supabase.rpc('fx_status')
+      if (error) throw error
+      const row = (data as FxStatus[] | null)?.[0] ?? null
+      return row
+    },
+    staleTime: 60_000,
+  })
+}
+
+export function useSetFxThresholds() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { warnAfter: number; blockAfter: number }) => {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .update({
+          fx_warn_after_hours: input.warnAfter,
+          fx_block_after_hours: input.blockAfter,
+        })
+        .eq('id', true)
+        .select('id')
+      if (error) throw error
+      // Non-admins are filtered to zero rows rather than refused outright.
+      if (!data || data.length === 0) throw new Error('ضبط حدود سعر الصرف مخصّص لمدير النظام')
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['fx-status'] }),
+  })
+}

@@ -100,6 +100,26 @@ begin
   raise notice '  ok    % (% rows)', p_label, v_got;
 end $$;
 
+/**
+ * How many rows the statement actually changed.
+ *
+ * The assertion for "RLS silently filtered this UPDATE to nothing": it does
+ * not raise, so t.denied() cannot see it, and the row is unchanged so a
+ * follow-up read cannot distinguish "refused" from "wrote the same value".
+ */
+create or replace function t.affected(p_uid uuid, p_role text, p_sql text, p_want bigint, p_label text)
+returns void language plpgsql as $$
+declare v_got bigint;
+begin
+  perform t.as_user(p_uid, p_role);
+  execute p_sql;
+  get diagnostics v_got = row_count;
+  if v_got is distinct from p_want then
+    raise exception 'FAIL: % — % rows changed, want %', p_label, v_got, p_want;
+  end if;
+  raise notice '  ok    % (% rows changed)', p_label, v_got;
+end $$;
+
 /** Read one value back as a given identity, for use inside t.eq(). */
 create or replace function t.scalar(p_uid uuid, p_role text, p_query text)
 returns text language plpgsql as $$

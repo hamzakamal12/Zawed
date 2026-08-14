@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { AlertTriangle, Coins, PackageX, ShoppingBag, Clock } from 'lucide-react'
-import { useAdminOrders, useCurrentFx, useInventory, useProducts } from '@/hooks/queries'
+import { Coins, PackageX, ShoppingBag, Clock } from 'lucide-react'
+import { useAdminOrders, useCurrentFx, useFxStatus, useInventory, useProducts } from '@/hooks/queries'
+import FxAgeNotice from '@/components/FxAgeNotice'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatDate, formatNumber, formatSDG, hoursSince } from '@/lib/format'
-import { Badge, Card, CardBody, CardTitle, Notice, Skeleton, StatTile } from '@/components/ui'
+import { Badge, Card, CardBody, CardTitle, Skeleton, StatTile } from '@/components/ui'
 import OrderStatusBadge from '@/components/OrderStatusBadge'
 
 export default function AdminDashboard() {
@@ -23,20 +24,17 @@ export default function AdminDashboard() {
   )
 
   const fxAge = hoursSince(fx.data?.effective_from)
-  const fxStale = fxAge != null && fxAge > 24
+  const fxStatus = useFxStatus()
+  const fxStale = fxStatus.data?.is_stale ?? false
 
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-extrabold tracking-tight text-ink">{t('admin_title')}</h1>
 
-      {fxStale && (
-        <Notice tone="warning" icon={<AlertTriangle size={18} />}>
-          {t('fx_stale_warning')}
-          <Link to="/admin/fx" className="ms-2 underline">
-            {t('fx_title')}
-          </Link>
-        </Notice>
-      )}
+      {/* Age, thresholds and verdict all come from the server, which is also
+          what enforces them — a locally computed "stale after 24h" could show
+          reassuring green for a rate the server is already refusing. */}
+      <FxAgeNotice />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
