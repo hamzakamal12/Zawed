@@ -141,6 +141,7 @@ export const strings = {
     users_self_note: 'لا يمكنك تعديل دورك أو إيقاف حسابك بنفسك.',
     users_readonly: 'العرض فقط — تعديل الأدوار وإنشاء الحسابات مخصّص لمدير النظام.',
     nav_users: 'المستخدمون',
+    skip_to_content: 'تخطَّ إلى المحتوى',
 
     // catalog admin
     cat_title: 'إدارة الكتالوج',
@@ -618,6 +619,7 @@ export const strings = {
     users_self_note: 'You cannot change your own role or disable your own account.',
     users_readonly: 'Read only — creating accounts and changing roles is for administrators.',
     nav_users: 'Users',
+    skip_to_content: 'Skip to content',
 
     // catalog admin
     cat_title: 'Catalog management',

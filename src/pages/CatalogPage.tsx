@@ -66,6 +66,9 @@ export default function CatalogPage() {
           <Search
             size={18}
             className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted start-3"
+            // Decorative: the field's own placeholder already says what it is,
+            // so announcing the glyph adds a stray "image" to the reading order.
+            aria-hidden
           />
           <Input
             value={search}
@@ -134,7 +137,10 @@ function Chip({
       type="button"
       onClick={onClick}
       className={clsx(
+        // py-2 renders 38px tall — under the touch minimum, and these are the
+        // first thing a thumb reaches on the catalog.
         'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-all',
+        'touch:min-h-11',
         active
           ? 'bg-primary-700 text-white shadow-sm'
           : 'border border-line bg-white text-muted hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700',

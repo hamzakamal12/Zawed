@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import plugin from 'tailwindcss/plugin'
 
 /**
  * Palette notes — the colour choices here were validated with the dataviz
@@ -79,5 +80,19 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    /**
+     * `touch:` — styles that apply only when the pointer is a fingertip.
+     *
+     * The 44×44 minimum target is a TOUCH rule: a fingertip contact patch is
+     * about 9mm, a mouse cursor is one pixel. Growing every control to 44px
+     * unconditionally would pad out the dense admin tables for people who do
+     * not need it, so the size bump is scoped to coarse pointers.
+     *
+     * Tailwind only ships `pointer-coarse` from v4; this is the v3 equivalent.
+     */
+    plugin(({ addVariant }) => {
+      addVariant('touch', '@media (pointer: coarse)')
+    }),
+  ],
 } satisfies Config

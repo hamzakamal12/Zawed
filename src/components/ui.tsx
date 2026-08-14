@@ -36,9 +36,11 @@ const variants: Record<Variant, string> = {
   success: 'bg-[#0a7a0a] text-white shadow-sm hover:brightness-95 disabled:opacity-50',
 }
 
-// Min 44px tap targets on md/lg (mobile spec).
+// md/lg already clear the 44px touch minimum. `sm` is 36px, which is fine
+// under a mouse and too small under a fingertip — so it grows to 44 only on a
+// coarse pointer, instead of padding out the dense admin screens for everyone.
 const sizes: Record<Size, string> = {
-  sm: 'h-9 px-3 text-sm gap-1.5',
+  sm: 'h-9 touch:h-11 touch:min-w-11 px-3 text-sm gap-1.5',
   md: 'h-11 px-4 text-sm gap-2',
   lg: 'h-12 px-6 text-base gap-2',
 }

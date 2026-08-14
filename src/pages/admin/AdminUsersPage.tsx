@@ -112,6 +112,9 @@ export default function AdminUsersPage() {
         <Search
           size={18}
           className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted start-3"
+          // Decorative: the field's own placeholder already says what it is,
+          // so announcing the glyph adds a stray "image" to the reading order.
+          aria-hidden
         />
         <Input
           value={search}

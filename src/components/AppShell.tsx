@@ -66,6 +66,17 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-canvas">
+      {/* Measured: reaching the page content by keyboard cost 15 tab stops on
+          every navigation, because the sidebar comes first in the DOM. Hidden
+          until focused, so it costs sighted users nothing. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg
+                   focus:bg-primary-700 focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:text-white"
+      >
+        {t('skip_to_content')}
+      </a>
+
       {/* Dark ink on amber, not white: white on amber-500 measures ~2.1:1 and
           this strip carries the one message a user must not miss. */}
       {!online && (
@@ -149,7 +160,14 @@ export default function AppShell() {
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-6xl flex-1 p-4 pb-24 sm:p-6 md:pb-8">
+          {/* tabIndex -1 so the skip link can actually move focus here; without
+              it the browser scrolls but focus stays on the link, and the next
+              Tab goes back into the navigation. */}
+          <main
+            id="main"
+            tabIndex={-1}
+            className="mx-auto w-full max-w-6xl flex-1 p-4 pb-24 outline-none sm:p-6 md:pb-8"
+          >
             <Outlet />
           </main>
         </div>
@@ -228,7 +246,9 @@ function SideLink({
       end={to === '/admin'}
       className={({ isActive }) =>
         clsx(
-          'relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors',
+          // 40px under a mouse, 44 under a finger — the sidebar is visible from
+          // 768px up, which is squarely tablet territory.
+          'relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 touch:min-h-11 text-sm font-semibold transition-colors',
           isActive
             ? 'bg-primary-50 text-primary-700'
             : 'text-muted hover:bg-canvas hover:text-ink',
