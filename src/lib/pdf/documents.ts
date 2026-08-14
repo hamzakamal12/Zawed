@@ -59,8 +59,12 @@ const TITLES: Record<DocKind, { ar: string; en: string }> = {
   delivery_note: { ar: 'إذن تسليم', en: 'DELIVERY NOTE' },
 }
 
-const TEAL = '#0d5c63'
-const GOLD = '#d4a24e'
+// Kept in step with the app's validated ramp (tailwind.config.ts): the earlier
+// #0d5c63 fell under the chroma floor and #d4a24e measured 2.31:1 on white.
+// A document is the thing a customer keeps, so it should not be printed in a
+// palette the interface has already retired.
+const TEAL = '#0a6d74'
+const GOLD = '#b8801f'
 const INK = '#0f2b34'
 const MUTED = '#5b6b70'
 const LINE = '#e3eaec'
