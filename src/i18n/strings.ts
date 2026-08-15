@@ -143,6 +143,20 @@ export const strings = {
     nav_users: 'المستخدمون',
     skip_to_content: 'تخطَّ إلى المحتوى',
 
+    // confirm-your-own-order flow
+    confirm_title: 'فواتير مبدئية بانتظار التأكيد',
+    confirm_subtitle: 'راجع الفاتورة المبدئية واطبعها إن احتجت، ثم أكّد الطلب ليصلنا.',
+    confirm_empty: 'لا توجد فواتير مبدئية بانتظارك',
+    confirm_review_doc: 'الفاتورة المبدئية',
+    confirm_explains: 'افتح الفاتورة أو اطبعها للمراجعة. الأسعار مثبّتة على هذه الفاتورة ولن تتغيّر بعد التأكيد.',
+    confirm_order: 'تأكيد الطلب',
+    confirm_cancel: 'إلغاء الطلب',
+    awaiting_confirmation: 'بانتظار تأكيدك',
+    confirm_next_step: 'صدرت فاتورتكم المبدئية — راجعوها ثم أكّدوا الطلب.',
+    confirm_go: 'مراجعة وتأكيد',
+    confirm_expiry_note: 'الفاتورة المبدئية غير المؤكَّدة تُلغى تلقائياً بعد {d} أيام وتُفرَج الكمية المحجوزة.',
+    fx_expiry_days: 'إلغاء الفواتير المبدئية غير المؤكَّدة بعد (يوم)',
+
     // catalog admin
     cat_title: 'إدارة الكتالوج',
     cat_subtitle: 'أضف المنتجات واضبط التكلفة والهامش والمخزون.',
@@ -174,7 +188,7 @@ export const strings = {
     cat_then_set_price: 'بعد الحفظ، افتح «السعر والمخزون» لضبط التكلفة والهامش — لن يظهر المنتج بسعر قبلها.',
     proforma_raised: 'صدرت الفاتورة المبدئية',
     proforma_awaiting_note: 'أُرسلت الفاتورة المبدئية لمسؤول حساب مؤسستكم للاعتماد. يُؤكَّد الطلب فور الموافقة.',
-    awaiting_internal_approval: 'بانتظار اعتماد العميل',
+    awaiting_internal_approval: 'بانتظار تأكيد العميل',
     approval_confirms_order: 'الموافقة تؤكّد الطلب وتحوّل الفاتورة المبدئية إلى طلب توريد.',
     review_proforma: 'راجع الفاتورة المبدئية',
     blocked_until_approved: 'لا يمكن تنفيذ الطلب قبل اعتماد مسؤول حساب العميل.',
@@ -427,8 +441,8 @@ export const strings = {
     doc_delivery_note: 'إذن تسليم',
 
     // approvals
-    nav_approvals: 'طلبات بانتظار موافقتي',
-    approvals_title: 'صندوق الموافقات',
+    nav_approvals: 'بانتظار التأكيد',
+    approvals_title: 'التأكيد',
     approvals_empty: 'لا توجد طلبات بانتظار الموافقة',
     approve: 'موافقة',
     reject: 'رفض',
@@ -621,6 +635,20 @@ export const strings = {
     nav_users: 'Users',
     skip_to_content: 'Skip to content',
 
+    // confirm-your-own-order flow
+    confirm_title: 'Proformas awaiting confirmation',
+    confirm_subtitle: 'Review the proforma, print it if you need to, then confirm the order.',
+    confirm_empty: 'Nothing waiting for you',
+    confirm_review_doc: 'Proforma invoice',
+    confirm_explains: 'Open or print it to review. The prices are fixed on this document and will not change once you confirm.',
+    confirm_order: 'Confirm order',
+    confirm_cancel: 'Cancel order',
+    awaiting_confirmation: 'Awaiting your confirmation',
+    confirm_next_step: 'Your proforma is ready — review it, then confirm the order.',
+    confirm_go: 'Review and confirm',
+    confirm_expiry_note: 'An unconfirmed proforma is cancelled automatically after {d} days and the reserved stock is released.',
+    fx_expiry_days: 'Cancel unconfirmed proformas after (days)',
+
     // catalog admin
     cat_title: 'Catalog management',
     cat_subtitle: 'Add products and set cost, margin and stock.',
@@ -652,7 +680,7 @@ export const strings = {
     cat_then_set_price: 'After saving, open "Price and stock" to set cost and margin — the product shows no price until you do.',
     proforma_raised: 'Proforma invoice issued',
     proforma_awaiting_note: 'The proforma has gone to your organization\u2019s account manager for approval. The order is confirmed as soon as they sign it off.',
-    awaiting_internal_approval: 'Awaiting customer approval',
+    awaiting_internal_approval: 'Awaiting customer confirmation',
     approval_confirms_order: 'Approving confirms the order and turns this proforma into a live supply order.',
     review_proforma: 'Review the proforma',
     blocked_until_approved: 'This order cannot be worked on until the customer\u2019s account manager approves it.',
@@ -893,8 +921,8 @@ export const strings = {
     doc_invoice: 'Tax invoice',
     doc_delivery_note: 'Delivery note',
 
-    nav_approvals: 'Awaiting my approval',
-    approvals_title: 'Approval inbox',
+    nav_approvals: 'Awaiting confirmation',
+    approvals_title: 'Confirmation',
     approvals_empty: 'Nothing awaiting approval',
     approve: 'Approve',
     reject: 'Reject',

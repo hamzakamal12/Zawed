@@ -39,14 +39,14 @@ export default function ApprovalsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold text-ink">{t('approvals_title')}</h1>
-        <p className="mt-1 text-sm text-muted">{t('awaiting_your_approval')}</p>
+        <h1 className="text-2xl font-extrabold text-ink">{t('confirm_title')}</h1>
+        <p className="mt-1 text-sm text-muted">{t('confirm_subtitle')}</p>
       </div>
 
       {error && <Notice tone="danger">{error}</Notice>}
 
       {rows.length === 0 ? (
-        <EmptyState icon={<Inbox size={40} />} title={t('approvals_empty')} />
+        <EmptyState icon={<Inbox size={40} />} title={t('confirm_empty')} />
       ) : (
         <div className="space-y-3">
           {rows.map((order) => (
@@ -56,7 +56,7 @@ export default function ApprovalsPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-ink">{order.order_number}</span>
-                      <Badge tone="warning">{t('awaiting_your_approval')}</Badge>
+                      <Badge tone="warning">{t('awaiting_confirmation')}</Badge>
                     </div>
                     <div className="mt-1 text-xs text-muted">
                       {formatDate(order.created_at, lang)}
@@ -85,15 +85,20 @@ export default function ApprovalsPage() {
                   <p className="rounded-lg bg-canvas px-3 py-2 text-sm text-muted">{order.notes}</p>
                 )}
 
-                {/* Officials approve a DOCUMENT. Handing them the same
-                    proforma the buyer received is what makes this a real
-                    authorisation step rather than a click-through. */}
-                <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+                {/* The document is the deliverable of step one — you are meant
+                    to open or print it, check it, and only then confirm. Given
+                    its own block rather than tucked beside the buttons. */}
+                <div className="rounded-xl border border-primary-200 bg-primary-50 p-3">
+                  <div className="mb-2 text-sm font-bold text-primary-800">
+                    {t('confirm_review_doc')}
+                  </div>
                   <DocumentButton
                     kind="proforma"
                     build={() => buildOrderDoc(order, 'proforma', pick)}
                   />
-                  <span className="text-xs text-muted">{t('approval_confirms_order')}</span>
+                  <p className="mt-2 text-xs leading-relaxed text-primary-800">
+                    {t('confirm_explains')}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -110,7 +115,7 @@ export default function ApprovalsPage() {
                     disabled={decide.isPending}
                   >
                     <CheckCircle2 size={15} />
-                    {t('approve')}
+                    {t('confirm_order')}
                   </Button>
                   <Button
                     variant="danger"
@@ -119,7 +124,7 @@ export default function ApprovalsPage() {
                     disabled={decide.isPending}
                   >
                     <XCircle size={15} />
-                    {t('reject')}
+                    {t('confirm_cancel')}
                   </Button>
                 </div>
               </CardBody>

@@ -63,10 +63,10 @@ export default function OrderDetailPage() {
             }
           >
             {o.internal_approval === 'approved'
-              ? t('approve')
+              ? t('confirm_order')
               : o.internal_approval === 'rejected'
-                ? t('reject')
-                : t('awaiting_your_approval')}
+                ? t('confirm_cancel')
+                : t('awaiting_confirmation')}
           </Badge>
           {o.approval_comment && <span className="text-muted">— {o.approval_comment}</span>}
         </div>

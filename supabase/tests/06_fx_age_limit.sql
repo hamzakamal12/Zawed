@@ -87,8 +87,16 @@ select t.denied(:sales, 'authenticated',
 --    freezing the business.
 select t.rows(:sales, 'authenticated', 'select 1 from orders', 2::bigint,
               'orders placed earlier are still there');
+
+-- Since migration 15 every order is a proforma until its owner confirms it,
+-- so the customer signs first — an expired rate must not block confirming an
+-- order that was already priced at a rate that WAS valid.
+select t.allowed(:buyer, 'authenticated', $$
+  select decide_internal_approval(id, true, null)
+    from orders where internal_approval = 'pending'
+$$, 'the customer can still confirm a proforma raised on a valid rate');
 select t.allowed(:sales, 'authenticated',
-  $$update orders set status = 'picking' where status = 'pending_approval'$$,
+  $$update orders set status = 'picking' where status = 'confirmed'$$,
   'staff can still work existing orders on an expired rate');
 
 -- 7. Updating the rate clears it immediately — the way out is obvious and

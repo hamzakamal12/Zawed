@@ -30,7 +30,6 @@ import { Button } from './ui'
 export default function AppShell() {
   const { t, toggleLang, pick } = useI18n()
   const { profile, company, isStaff, isAdmin, signOut } = useAuth()
-  const isCompanyAdmin = profile?.role === 'customer_admin'
   const { count } = useCart()
   const online = useOnlineStatus()
   const queue = useOrderQueue()
@@ -46,7 +45,9 @@ export default function AppShell() {
     { to: '/quote-requests', label: t('nav_requests'), icon: FileQuestion },
     { to: '/invoices', label: t('nav_invoices'), icon: Receipt },
     { to: '/recurring', label: t('nav_recurring'), icon: Repeat },
-    ...(isCompanyAdmin ? [{ to: '/approvals', label: t('nav_approvals'), icon: Inbox }] : []),
+    // Every customer account needs this now: it is where your own proforma
+    // waits to be printed and confirmed, not an approver's inbox.
+    { to: '/approvals', label: t('nav_approvals'), icon: Inbox },
   ]
   const staffNav = [
     { to: '/admin', label: t('nav_dashboard'), icon: Gauge },

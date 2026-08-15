@@ -55,6 +55,7 @@ export default function CheckoutPage() {
         orderId={result.order_id}
         orderNumber={result.order_number}
         onView={() => navigate(`/orders/${result.order_id}`)}
+        onConfirm={() => navigate('/approvals')}
         onBrowse={() => navigate('/catalog')}
       />
     )
@@ -179,11 +180,13 @@ function OrderPlaced({
   orderId,
   orderNumber,
   onView,
+  onConfirm,
   onBrowse,
 }: {
   orderId: string
   orderNumber: string
   onView: () => void
+  onConfirm: () => void
   onBrowse: () => void
 }) {
   const { t, pick } = useI18n()
@@ -197,7 +200,7 @@ function OrderPlaced({
         {awaitingApproval ? t('proforma_raised') : t('order_placed')}
       </h1>
       <p className="mt-2 text-sm text-muted">
-        {awaitingApproval ? t('proforma_awaiting_note') : t('order_placed_note')}
+        {awaitingApproval ? t('confirm_next_step') : t('order_placed_note')}
       </p>
       <p className="mt-3 font-mono text-lg font-bold text-primary-700">{orderNumber}</p>
 
@@ -211,8 +214,12 @@ function OrderPlaced({
         </div>
       )}
 
-      <div className="mt-6 flex justify-center gap-2">
-        <Button onClick={onView}>{t('view_order')}</Button>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {awaitingApproval ? (
+          <Button onClick={onConfirm}>{t('confirm_go')}</Button>
+        ) : (
+          <Button onClick={onView}>{t('view_order')}</Button>
+        )}
         <Button variant="outline" onClick={onBrowse}>
           {t('browse_catalog')}
         </Button>

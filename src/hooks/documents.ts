@@ -239,12 +239,29 @@ export function useRecordPayment() {
 /* Internal approval inbox                                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Proformas waiting to be confirmed.
+ *
+ * Since migration 15 every order passes through this state and, by default,
+ * the person who placed it is the one who confirms it — so this is no longer
+ * a customer_admin's inbox. RLS already limits the rows to the caller's own
+ * company, and the RPC refuses a confirmation the caller may not make, so
+ * showing the list to every customer account is safe: at worst they see a
+ * colleague's proforma they cannot act on.
+ */
 export function usePendingApprovals() {
   const { profile } = useAuth()
   return useQuery({
     queryKey: ['pending-approvals', profile?.company_id],
-    enabled: profile?.role === 'customer_admin',
+    enabled: profile?.role === 'customer_admin' || profile?.role === 'customer_requester',
     queryFn: async () => {
+      // Self-healing: a proforma nobody confirms holds its stock forever, and
+      // there is no scheduler here. Sweeping on the read that would display it
+      // means the release happens whenever anyone looks, which is often
+      // enough. Ignore failures — an expiry that did not run is not a reason
+      // to fail the page.
+      await supabase.rpc('expire_stale_proformas')
+
       // Selects the full OrderWithItems shape, not just what the list renders:
       // the approver also raises the proforma PDF from this row, and that needs
       // line_total and the company party block. Selecting less produced a
