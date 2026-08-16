@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Check, Image as ImageIcon, Package, PackageSearch, Plus, Search, X } from 'lucide-react'
 import {
   useAdminCatalog,
@@ -84,10 +85,18 @@ export default function AdminCatalogPage() {
           <h1 className="text-2xl font-extrabold tracking-tight text-ink">{t('cat_title')}</h1>
           <p className="mt-1 text-sm text-muted">{t('cat_subtitle')}</p>
         </div>
-        <Button onClick={() => setEditing(editing ? null : { ...BLANK })}>
-          {editing ? <X size={16} /> : <Plus size={16} />}
-          {editing ? t('cancel') : t('cat_new_product')}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/admin/catalog/images">
+            <Button variant="outline">
+              <ImageIcon size={16} />
+              {t('bulk_open')}
+            </Button>
+          </Link>
+          <Button onClick={() => setEditing(editing ? null : { ...BLANK })}>
+            {editing ? <X size={16} /> : <Plus size={16} />}
+            {editing ? t('cancel') : t('cat_new_product')}
+          </Button>
+        </div>
       </div>
 
       {editing && (

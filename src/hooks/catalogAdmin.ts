@@ -224,3 +224,65 @@ export function useRemoveProductImage() {
     },
   })
 }
+
+export interface BulkUploadProgress {
+  done: number
+  total: number
+  failures: { sku: string; message: string }[]
+}
+
+/**
+ * Uploads a batch of matched photos.
+ *
+ * Three at a time, not all at once: the compression is CPU work and the
+ * upload is bandwidth, and firing fifty of each in parallel on a Sudanese
+ * connection makes every one of them slow and some of them time out. Three
+ * keeps the pipe busy without collapsing it.
+ *
+ * A file that fails does not stop the batch — one bad JPEG in fifty should
+ * cost you that one, not the run. The failures come back so the operator can
+ * see exactly which SKUs still need doing.
+ */
+export function useBulkProductImages() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      items: { productId: string; sku: string; file: File }[]
+      onProgress?: (p: BulkUploadProgress) => void
+    }) => {
+      const failures: { sku: string; message: string }[] = []
+      let done = 0
+      const queue = [...input.items]
+
+      const worker = async () => {
+        for (;;) {
+          const next = queue.shift()
+          if (!next) return
+          try {
+            const path = await uploadProductImage(next.productId, next.file)
+            const { error } = await supabase
+              .from('products')
+              .update({ image_path: path })
+              .eq('id', next.productId)
+            if (error) throw new Error(error.message)
+          } catch (err) {
+            failures.push({
+              sku: next.sku,
+              message: err instanceof Error ? err.message : 'خطأ غير معروف',
+            })
+          } finally {
+            done += 1
+            input.onProgress?.({ done, total: input.items.length, failures: [...failures] })
+          }
+        }
+      }
+
+      await Promise.all([worker(), worker(), worker()])
+      return { done, total: input.items.length, failures }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-catalog'] })
+      qc.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}

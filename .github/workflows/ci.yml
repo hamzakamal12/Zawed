@@ -18,6 +18,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      # Matching a photo to a product by filename is the one piece of frontend
+      # logic that can do silent damage — a wrong match puts a picture on the
+      # wrong product, where nobody goes looking for it. Checked against the
+      # real SKU list, including the pairs that share a prefix.
+      - run: npm run test:match
       # The build is not redundant with the typecheck: the service worker is
       # stamped with a build id at this step, and the plugin throws if the
       # placeholder is missing. That failure only shows up here.

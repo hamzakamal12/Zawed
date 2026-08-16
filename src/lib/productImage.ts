@@ -112,3 +112,82 @@ export async function uploadProductImage(productId: string, file: File): Promise
   if (error) throw new Error(error.message)
   return path
 }
+
+/* ------------------------------------------------------------------ */
+/* Bulk matching                                                       */
+/* ------------------------------------------------------------------ */
+
+export interface SkuMatch {
+  file: File
+  /** Null when nothing matched, or when the filename was ambiguous. */
+  productId: string | null
+  sku: string | null
+  reason: 'exact' | 'contained' | 'none' | 'ambiguous' | 'has-image'
+}
+
+/**
+ * Reduces a filename to something comparable with a SKU.
+ *
+ * Photos arrive named by whatever produced them, so this absorbs the usual
+ * damage: the extension, the "(1)" a second download picks up, a trailing
+ * "_2" from a burst, and the difference between a space, an underscore and a
+ * hyphen. Case is folded because Windows and phones disagree about it.
+ */
+export function normalizeForSku(name: string): string {
+  return name
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/\s*\(\d+\)\s*$/, '')
+    .replace(/[_\s]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toUpperCase()
+}
+
+/**
+ * Works out which product each file belongs to.
+ *
+ * Exact match first. Failing that, a SKU appearing INSIDE the filename counts
+ * — "ورق A4 - PAP-A4-80.jpg" is a name a human would reasonably produce. But
+ * if two different SKUs both appear, the file is reported as ambiguous rather
+ * than assigned to one of them: attaching a photo to the wrong product is
+ * worse than attaching none, because nobody goes looking for it.
+ *
+ * Pure on purpose — this is the part that can quietly do damage, so it is
+ * decided before anything is uploaded and shown to the operator first.
+ */
+export function matchFilesToProducts(
+  files: File[],
+  products: { id: string; sku: string; image_path: string | null }[],
+  options: { skipExisting?: boolean } = {},
+): SkuMatch[] {
+  const bySku = new Map<string, { id: string; sku: string; image_path: string | null }>()
+  for (const p of products) bySku.set(normalizeForSku(p.sku), p)
+  const skus = [...bySku.keys()].sort((a, b) => b.length - a.length)
+
+  return files.map((file) => {
+    const stem = normalizeForSku(file.name)
+
+    const exact = bySku.get(stem)
+    if (exact) {
+      return exact.image_path && options.skipExisting
+        ? { file, productId: null, sku: exact.sku, reason: 'has-image' as const }
+        : { file, productId: exact.id, sku: exact.sku, reason: 'exact' as const }
+    }
+
+    // Longest first, so "PAP-A4-80" wins over a hypothetical "PAP-A4" prefix
+    // before the ambiguity check ever sees them as two separate hits.
+    const hits = skus.filter((s) => stem.includes(s))
+    const distinct = hits.filter((s) => !hits.some((other) => other !== s && other.includes(s)))
+
+    if (distinct.length === 1) {
+      const p = bySku.get(distinct[0])!
+      return p.image_path && options.skipExisting
+        ? { file, productId: null, sku: p.sku, reason: 'has-image' as const }
+        : { file, productId: p.id, sku: p.sku, reason: 'contained' as const }
+    }
+    if (distinct.length > 1) {
+      return { file, productId: null, sku: null, reason: 'ambiguous' as const }
+    }
+    return { file, productId: null, sku: null, reason: 'none' as const }
+  })
+}
