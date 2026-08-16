@@ -65,7 +65,8 @@ export interface Product {
   category_id: string | null
   unit: ProductUnit
   units_per_pack: number
-  image_url: string | null
+  /** Path inside the product-images bucket, not a URL — see migration 16. */
+  image_path: string | null
   description_ar: string | null
   is_active: boolean
   min_order_qty: number

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { uploadProductImage } from '@/lib/productImage'
 import { useAuth } from '@/context/AuthProvider'
 import type { Inventory, Product, ProductPrice, ProductUnit } from '@/lib/database.types'
 
@@ -173,5 +174,53 @@ export function useSaveCategory() {
       if (error) throw error
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
+  })
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Attach a photo to a product.
+ *
+ * The image is downscaled and re-encoded in the browser first — the original
+ * off a phone never crosses the network. Upload, then point the row at the new
+ * path; doing it in that order means a failed upload leaves the product with
+ * its previous picture rather than a path to a file that was never written.
+ */
+export function useSetProductImage() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: { productId: string; file: File }) => {
+      const path = await uploadProductImage(input.productId, input.file)
+      const { error } = await supabase
+        .from('products')
+        .update({ image_path: path })
+        .eq('id', input.productId)
+      if (error) throw error
+      return path
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-catalog'] })
+      qc.invalidateQueries({ queryKey: ['products'] })
+    },
+  })
+}
+
+export function useRemoveProductImage() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (productId: string) => {
+      // Only clears the reference. The file itself is queued for sweeping by
+      // the orphan trigger, so a mis-click stays recoverable until then.
+      const { error } = await supabase
+        .from('products')
+        .update({ image_path: null })
+        .eq('id', productId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-catalog'] })
+      qc.invalidateQueries({ queryKey: ['products'] })
+    },
   })
 }

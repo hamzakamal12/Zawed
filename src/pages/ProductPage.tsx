@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowRight, ArrowLeft, ShoppingCart, TrendingDown } from 'lucide-react'
 import {
   useCatalogPrices,
+  useCategories,
   useInventory,
   usePriceForQty,
   useProductTiers,
@@ -12,6 +13,7 @@ import { useCart } from '@/context/CartProvider'
 import { useI18n } from '@/i18n/I18nProvider'
 import { formatNumber, formatSDG } from '@/lib/format'
 import { Badge, Button, Card, CardBody, CardTitle, QtyStepper, Skeleton } from '@/components/ui'
+import { ProductImage } from '@/components/ProductImage'
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>()
@@ -26,7 +28,11 @@ export default function ProductPage() {
   const catalogPrices = useCatalogPrices()
   const tiers = useProductTiers(id)
   const inventory = useInventory()
+  const categories = useCategories()
   const [added, setAdded] = useState(false)
+
+  // Only needed for the glyph a product without a photo falls back to.
+  const category = categories.data?.find((c) => c.id === product?.category_id)
 
   const stock = inventory.data?.find((i) => i.product_id === id)
   const available = Math.max((stock?.qty_on_hand ?? 0) - (stock?.qty_reserved ?? 0), 0)
@@ -78,6 +84,17 @@ export default function ProductPage() {
       </Link>
 
       <Card>
+        {/* Above the fold and the only image on the page, so it loads eagerly
+            rather than waiting for the lazy observer — this is the picture the
+            buyer came here to look at. */}
+        <ProductImage
+          path={product.image_path}
+          alt={pick(product.name_ar, product.name_en)}
+          icon={category?.icon}
+          glyphSize={44}
+          eager
+          className="h-56 w-full border-b border-line sm:h-72"
+        />
         <CardBody>
           <div className="flex items-start justify-between gap-3">
             <div>

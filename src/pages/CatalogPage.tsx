@@ -8,6 +8,7 @@ import { useI18n } from '@/i18n/I18nProvider'
 import { formatSDG, normalizeArabic } from '@/lib/format'
 import { Badge, Button, Card, EmptyState, ErrorState, Input, Skeleton } from '@/components/ui'
 import { CategoryGlyph } from '@/components/CategoryGlyph'
+import { ProductImage } from '@/components/ProductImage'
 import type { Category, Inventory, Product } from '@/lib/database.types'
 
 export default function CatalogPage() {
@@ -175,10 +176,18 @@ function ProductTile({
   return (
     <Card interactive className="flex h-full flex-col overflow-hidden">
       <Link to={`/catalog/${product.id}`} className="flex flex-1 flex-col">
-        {/* Category band — gives every tile a recognisable identity without images. */}
-        <div className="relative flex h-20 items-center justify-center bg-primary-50">
-          <div className="bg-dotted absolute inset-0 opacity-60" aria-hidden />
-          <CategoryGlyph icon={category?.icon} size={28} className="relative text-primary-500" />
+        {/* Taller than the old glyph band, because a photograph needs room to
+            be recognisable — but a FIXED height, so a tile is the same size
+            before and after its picture loads. Products without a photo keep
+            the category glyph, so a half-photographed catalog still looks
+            deliberate. */}
+        <div className="relative h-32">
+          <ProductImage
+            path={product.image_path}
+            alt={pick(product.name_ar, product.name_en)}
+            icon={category?.icon}
+            className="h-full w-full"
+          />
           <span className="absolute top-2 end-2">
             {isOut ? (
               <Badge tone="danger">{t('out_of_stock')}</Badge>

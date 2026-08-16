@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Check, Package, PackageSearch, Plus, Search, X } from 'lucide-react'
+import { Check, Image as ImageIcon, Package, PackageSearch, Plus, Search, X } from 'lucide-react'
 import {
   useAdminCatalog,
   useSaveProduct,
+  useRemoveProductImage,
+  useSetProductImage,
   useSetProductPrice,
   useSetStock,
   type ProductAdminRow,
@@ -26,6 +28,7 @@ import {
   Textarea,
 } from '@/components/ui'
 import { CategoryGlyph } from '@/components/CategoryGlyph'
+import { ProductImage } from '@/components/ProductImage'
 import type { ProductUnit } from '@/lib/database.types'
 
 const UNITS: ProductUnit[] = ['piece', 'box', 'ream', 'carton', 'kg', 'liter']
@@ -175,6 +178,12 @@ function ProductRow({
     <Card>
       <CardBody className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
+          <ProductImage
+            path={product.image_path}
+            alt={pick(product.name_ar, product.name_en)}
+            glyphSize={18}
+            className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-line"
+          />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-bold text-ink">{product.sku}</span>
@@ -209,6 +218,7 @@ function ProductRow({
           <Button variant="ghost" size="sm" onClick={() => setOpen((v) => !v)}>
             {open ? t('cancel') : t('cat_price_and_stock')}
           </Button>
+          {!product.image_path && <Badge tone="warning">{t('cat_no_image')}</Badge>}
         </div>
 
         {open && <PriceAndStock product={product} rate={rate} onDone={() => setOpen(false)} />}
@@ -314,6 +324,8 @@ function PriceAndStock({
           {setPrice.isPending ? t('loading') : t('cat_save_price')}
         </Button>
       </div>
+
+      <ImageBlock product={product} />
 
       <div className="border-t border-line pt-4">
         <CardTitle className="mb-3 text-sm">{t('cat_stock_section')}</CardTitle>
@@ -524,5 +536,79 @@ function ProductForm({
         </form>
       </CardBody>
     </Card>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * The picture, uploaded from here.
+ *
+ * The file is downscaled and re-encoded in the browser before it is sent, so
+ * the admin can pick a photo straight off their phone without making the
+ * catalog slow for a customer on mobile data. The saving is shown because it
+ * is the only feedback that the compression ran at all.
+ */
+function ImageBlock({ product }: { product: ProductAdminRow }) {
+  const { t, pick } = useI18n()
+  const setImage = useSetProductImage()
+  const removeImage = useRemoveProductImage()
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState<string | null>(null)
+
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    // Clear immediately so picking the same file twice still fires onChange.
+    e.target.value = ''
+    if (!file) return
+    setError(null)
+    setSaved(null)
+    try {
+      const before = file.size
+      await setImage.mutateAsync({ productId: product.id, file })
+      setSaved(t('cat_image_saved', { kb: Math.max(1, Math.round(before / 1024)) }))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('error_generic'))
+    }
+  }
+
+  return (
+    <div className="border-t border-line pt-4">
+      <CardTitle className="mb-3 text-sm">{t('cat_image')}</CardTitle>
+      <div className="flex flex-wrap items-center gap-3">
+        <ProductImage
+          path={product.image_path}
+          alt={pick(product.name_ar, product.name_en)}
+          glyphSize={22}
+          className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line"
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="inline-flex h-9 touch:h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-sm font-semibold text-ink hover:border-primary-300 hover:bg-primary-50">
+            <ImageIcon size={15} />
+            {setImage.isPending ? t('loading') : product.image_path ? t('cat_image_replace') : t('cat_image_add')}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={setImage.isPending}
+              onChange={onPick}
+            />
+          </label>
+          {product.image_path && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={removeImage.isPending}
+              onClick={() => removeImage.mutate(product.id)}
+            >
+              {t('cat_image_remove')}
+            </Button>
+          )}
+        </div>
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted">{t('cat_image_note')}</p>
+      {saved && <Notice tone="success">{saved}</Notice>}
+      {error && <Notice tone="danger">{error}</Notice>}
+    </div>
   )
 }
